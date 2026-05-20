@@ -238,6 +238,22 @@ a{color:var(--bcyan);text-decoration:none;}
 a:hover{color:var(--byellow);}
 .text-bright{color:var(--bright);}.text-cyan{color:var(--cyan);}.text-bcyan{color:var(--bcyan);}.text-bgreen{color:var(--bgreen);}.text-yellow{color:var(--byellow);}.text-dgray{color:var(--dgray);}
 
+/* ── REVIEWS TERMINAL ── */
+#reviews-terminal::-webkit-scrollbar{width:8px;background:var(--bg);}
+#reviews-terminal::-webkit-scrollbar-thumb{background:var(--dgray);}
+.rev-line-user{color:var(--bcyan);}
+.rev-line-time{color:var(--dgray);}
+.rev-line-rating{color:var(--byellow);}
+.rev-line-text{color:var(--bgreen);}
+.rev-line-prompt{color:var(--dgray);}
+.rev-cursor{display:inline-block;width:8px;height:14px;background:var(--bgreen);animation:blink 1s step-end infinite;vertical-align:bottom;margin-left:2px;}
+
+/* ── GAME ── */
+#game{position:relative;}
+#game .window-content{position:relative;padding:0;}
+#game-canvas{width:100%;height:320px;image-rendering:pixelated;}
+#game-overlay{border-top:1px solid var(--dgray);}
+
 @media(max-width:700px){.video-grid{grid-template-columns:1fr;}.tour-table{font-size:12px;}.news-entry{grid-template-columns:1fr;}.artist-panel{grid-template-columns:1fr;}}
 </style>
 </head>
@@ -297,6 +313,8 @@ a:hover{color:var(--byellow);}
     <div class="desk-icon" tabindex="0" data-target="photos"     role="listitem"><div class="icon-glyph ed" id="ico5g">&#x1F4F7;</div><div class="icon-label ed" id="ico5l">PHOTOS\</div></div>
     <div class="desk-icon" tabindex="0" data-target="newsletter" role="listitem"><div class="icon-glyph ed" id="ico6g">&#x2709;</div><div class="icon-label ed" id="ico6l">MAILIST.BAT</div></div>
     <div class="desk-icon" tabindex="0" data-target="credits"    role="listitem"><div class="icon-glyph ed" id="ico7g">&#x2139;</div><div class="icon-label ed" id="ico7l">CREDITS.NFO</div></div>
+    <div class="desk-icon" tabindex="0" data-target="reviews"    role="listitem"><div class="icon-glyph ed" id="ico8g">&#x1F4AC;</div><div class="icon-label ed" id="ico8l">REVIEWS.LOG</div></div>
+    <div class="desk-icon" tabindex="0" data-target="game"       role="listitem"><div class="icon-glyph ed" id="ico9g">&#x1F579;</div><div class="icon-label ed" id="ico9l">GAME.EXE</div></div>
   </div>
 
   <!-- TICKER -->
@@ -624,6 +642,78 @@ Enter your email address and press [SUBSCRIBE]:</pre>
           <div class="text-dgray">IBM VGA/CGA/EGA by <a href="https://int10h.org/oldschool-pc-fonts/" target="_blank">VileR</a></div>
           <div class="text-dgray">CC BY-SA 4.0 &#x2500; int10h.org</div>
         </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- REVIEWS WINDOW -->
+  <div class="window" id="reviews">
+    <div class="window-titlebar">
+      <span style="padding:0 4px;">&#x25A0;</span>
+      <span class="window-title ed" id="reviews-title">C:\BRADBOWERS\REVIEWS.LOG &nbsp;&#x2500; What People Are Saying</span>
+      <div class="win-btns">
+        <button class="window-btn" onclick="toggleWin('reviews')">_</button>
+        <button class="window-btn" onclick="toggleWin('reviews')">&#x25A1;</button>
+        <button class="window-btn" onclick="toggleWin('reviews')">&#x2715;</button>
+      </div>
+    </div>
+    <div class="window-content" style="padding:0;">
+      <!-- Terminal output area -->
+      <div id="reviews-terminal" style="padding:8px 16px;height:280px;overflow-y:auto;background:#000;font-family:var(--vf);font-size:14px;line-height:18px;"></div>
+      <!-- Editable review source data (hidden, drives the terminal) -->
+      <div id="reviews-data" style="display:none;">
+        <div class="review-entry" data-user="user4521@aol.com" data-time="11:42 PM" data-rating="5">this guy is unreal. long vacation has been on repeat for 3 weeks straight. WHERE did he come from???</div>
+        <div class="review-entry" data-user="pitchfork_lurker" data-time="2:17 AM" data-rating="5">the production on negativity is so clean. sounds like it cost way more than it probably did. impressive.</div>
+        <div class="review-entry" data-user="RealMusicFan_1987" data-time="8:55 PM" data-rating="5">saw him play a set last month. tiny venue, packed out. everyone knew every word. something special happening here</div>
+        <div class="review-entry" data-user="indie_dispatch" data-time="3:33 PM" data-rating="4">loveladies might be the song of the year. that chorus does not quit. brad bowers is not playing around.</div>
+        <div class="review-entry" data-user="ANONYMOUS_LISTENER" data-time="12:01 AM" data-rating="5">strangest emotion made me cry on the subway. not elaborating further. 10/10</div>
+        <div class="review-entry" data-user="vinyl_only_snob" data-time="6:14 PM" data-rating="5">ordered the vinyl the second it dropped. if you sleep on this you will regret it. bookmark this page.</div>
+        <div class="review-entry" data-user="cassette_kid_99" data-time="9:09 AM" data-rating="5">pitchfork fantasy is what music sounds like when someone actually has something to say. rare these days.</div>
+        <div class="review-entry" data-user="BBS_MUSIC_BOARD" data-time="1:58 PM" data-rating="5">sugar daddy is a perfect pop song. repeat: PERFECT. add it to your playlist immediately.</div>
+      </div>
+      <!-- Controls -->
+      <div style="padding:6px 16px;border-top:1px solid var(--dgray);display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+        <button id="reviews-replay" onclick="startReviewsTerminal()" style="background:var(--green);color:var(--bg);border:1px solid var(--bgreen);font-family:var(--vf);font-size:13px;padding:1px 10px;cursor:pointer;height:18px;">[ &#x25B6; REPLAY ]</button>
+        <button id="reviews-pause" onclick="pauseReviews()" style="background:var(--dgray);color:var(--bright);border:1px solid var(--dgray);font-family:var(--vf);font-size:13px;padding:1px 10px;cursor:pointer;height:18px;">[ &#x2588;&#x2588; PAUSE ]</button>
+        <button onclick="addReviewEntry()" style="background:var(--blue);color:var(--bright);border:1px solid var(--bblue);font-family:var(--vf);font-size:13px;padding:1px 10px;cursor:pointer;height:18px;">[ + ADD REVIEW ]</button>
+        <span style="color:var(--dgray);font-size:12px;margin-left:auto;">Click [ EDIT MODE ] to edit any review text</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME WINDOW -->
+  <div class="window" id="game">
+    <div class="window-titlebar">
+      <span style="padding:0 4px;">&#x25A0;</span>
+      <span class="window-title">C:\BRADBOWERS\GAME.EXE &nbsp;&#x2500; SPACE DEFENDER</span>
+      <div class="win-btns">
+        <button class="window-btn" onclick="toggleWin('game')">_</button>
+        <button class="window-btn" onclick="toggleWin('game')">&#x25A1;</button>
+        <button class="window-btn" onclick="toggleWin('game')">&#x2715;</button>
+      </div>
+    </div>
+    <div class="window-content" style="padding:0;">
+      <div style="padding:4px 16px;border-bottom:1px solid var(--dgray);display:flex;gap:24px;align-items:center;">
+        <span style="color:var(--bcyan);font-size:13px;">SCORE: <span id="g-score">0</span></span>
+        <span style="color:var(--byellow);font-size:13px;">HI-SCORE: <span id="g-hiscore">0</span></span>
+        <span style="color:var(--bgreen);font-size:13px;">LIVES: <span id="g-lives">&#x2665;&#x2665;&#x2665;</span></span>
+        <span style="color:var(--dgray);font-size:13px;">LEVEL: <span id="g-level" style="color:var(--bmagenta);">1</span></span>
+        <span style="color:var(--dgray);font-size:12px;margin-left:auto;">&#x2190;&#x2192; MOVE &nbsp; SPACE SHOOT &nbsp; P PAUSE</span>
+      </div>
+      <!-- Game canvas rendered as a character grid -->
+      <canvas id="game-canvas" style="display:block;background:#000;cursor:none;"></canvas>
+      <!-- Overlay for start/game-over/pause -->
+      <div id="game-overlay" style="position:absolute;inset:0;background:rgba(0,0,0,0.85);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--vf);z-index:10;">
+        <pre id="game-overlay-art" style="color:var(--bgreen);font-size:14px;line-height:16px;text-align:center;text-shadow:0 0 8px var(--green);margin-bottom:16px;">
+ &#x2584;&#x2584;&#x2584;&#x2584;&#x2584;&#x2584;&#x2584;&#x2584;&#x2584;&#x2584;&#x2584;&#x2584;&#x2584;&#x2584;&#x2584;&#x2584;&#x2584;&#x2584;&#x2584;&#x2584;&#x2584;&#x2584;&#x2584;&#x2584;
+ SPACE DEFENDER v1.0
+ &#x2580;&#x2580;&#x2580;&#x2580;&#x2580;&#x2580;&#x2580;&#x2580;&#x2580;&#x2580;&#x2580;&#x2580;&#x2580;&#x2580;&#x2580;&#x2580;&#x2580;&#x2580;&#x2580;&#x2580;&#x2580;&#x2580;&#x2580;&#x2580;
+ Defend Brad Bowers from
+ the critics &amp; bad vibes!
+        </pre>
+        <div id="game-overlay-msg" style="color:var(--byellow);font-size:16px;margin-bottom:12px;">Press ENTER or tap to start</div>
+        <div style="color:var(--dgray);font-size:13px;">&#x2190;&#x2192; move &nbsp;&#x2423; shoot &nbsp; P pause</div>
       </div>
     </div>
   </div>
@@ -1044,6 +1134,462 @@ function saveHTML(){
   sb.textContent='SAVED: bradbowers-site.html';
   setTimeout(()=>{sb.textContent=editMode?'EDIT MODE':'NORMAL MODE';},2500);
 }
+/* ════════════════════════════════════════════════════
+   REVIEWS TERMINAL
+════════════════════════════════════════════════════ */
+let reviewTimer=null, reviewPaused=false, reviewIdx=0, reviewCharIdx=0, reviewLineIdx=0;
+const revLines=[];   // built from data divs
+const revTerm=document.getElementById('reviews-terminal');
+
+function buildRevLines(){
+  revLines.length=0;
+  document.querySelectorAll('#reviews-data .review-entry').forEach((el,i)=>{
+    const user=el.dataset.user||'anonymous';
+    const time=el.dataset.time||'??:??';
+    const stars='★'.repeat(parseInt(el.dataset.rating||5))+'☆'.repeat(5-parseInt(el.dataset.rating||5));
+    const text=el.textContent.trim();
+    revLines.push({user,time,stars,text,idx:i});
+  });
+}
+
+function revAppendHTML(html){
+  const span=document.createElement('span');
+  span.innerHTML=html;
+  revTerm.appendChild(span);
+  revTerm.scrollTop=revTerm.scrollHeight;
+}
+
+function startReviewsTerminal(){
+  if(reviewTimer)clearTimeout(reviewTimer);
+  revTerm.innerHTML='';
+  reviewIdx=0;reviewCharIdx=0;reviewLineIdx=0;reviewPaused=false;
+  buildRevLines();
+  typeNextReview();
+}
+
+function typeNextReview(){
+  if(reviewPaused)return;
+  if(reviewIdx>=revLines.length){
+    revAppendHTML('<br><span class="rev-line-prompt">&#x2500;&#x2500; END OF LOG &#x2500;&#x2500; <span class="rev-cursor"></span></span>');
+    return;
+  }
+  const r=revLines[reviewIdx];
+  // Print header line instantly
+  revAppendHTML(`<span class="rev-line-prompt">\n[${(reviewIdx+1).toString().padStart(2,'0')}] </span><span class="rev-line-user">${r.user}</span><span class="rev-line-time"> @ ${r.time}</span>  <span class="rev-line-rating">${r.stars}</span>\n`);
+  // Type out review text char by char
+  let ci=0;
+  const textSpan=document.createElement('span');
+  textSpan.className='rev-line-text';
+  const cursor=document.createElement('span');
+  cursor.className='rev-cursor';
+  textSpan.appendChild(cursor);
+  revTerm.appendChild(textSpan);
+
+  function typeChar(){
+    if(reviewPaused){reviewTimer=setTimeout(typeChar,100);return;}
+    if(ci<r.text.length){
+      textSpan.insertBefore(document.createTextNode(r.text[ci]),cursor);
+      ci++;
+      revTerm.scrollTop=revTerm.scrollHeight;
+      reviewTimer=setTimeout(typeChar, ci===r.text.length?0:28+Math.random()*18);
+    } else {
+      cursor.remove();
+      revAppendHTML('\n\n');
+      reviewIdx++;
+      reviewTimer=setTimeout(typeNextReview,900);
+    }
+  }
+  typeChar();
+}
+
+function pauseReviews(){
+  reviewPaused=!reviewPaused;
+  const btn=document.getElementById('reviews-pause');
+  btn.textContent=reviewPaused?'[ \u25B6 RESUME ]':'[ \u2588\u2588 PAUSE ]';
+  if(!reviewPaused)typeNextReview();
+}
+
+function addReviewEntry(){
+  const data=document.getElementById('reviews-data');
+  const div=document.createElement('div');
+  div.className='review-entry ed-block';
+  div.dataset.user='new_user';
+  div.dataset.time='12:00 AM';
+  div.dataset.rating='5';
+  div.textContent='Type your review here...';
+  data.appendChild(div);
+  if(editMode){div.contentEditable='true';addEditListeners(div);}
+  startReviewsTerminal();
+}
+
+// Auto-start after boot
+document.addEventListener('DOMContentLoaded',()=>{});
+// Start once boot screen clears
+(function waitForBoot(){
+  if(document.getElementById('boot-screen').classList.contains('gone')){
+    setTimeout(startReviewsTerminal,600);
+  } else {
+    setTimeout(waitForBoot,300);
+  }
+})();
+
+/* ════════════════════════════════════════════════════
+   SPACE DEFENDER GAME
+════════════════════════════════════════════════════ */
+(function(){
+  const canvas=document.getElementById('game-canvas');
+  const ctx=canvas.getContext('2d');
+  const overlay=document.getElementById('game-overlay');
+  const overlayMsg=document.getElementById('game-overlay-msg');
+  const scoreEl=document.getElementById('g-score');
+  const hiEl=document.getElementById('g-hiscore');
+  const livesEl=document.getElementById('g-lives');
+  const levelEl=document.getElementById('g-level');
+
+  // Colors
+  const C={bg:'#000',player:'#55ffff',bullet:'#ffff55',enemy:'#ff5555',
+           enemyB:'#ff5555',shield:'#55ff55',star:'#555',txt:'#aaa',
+           explo:'#ffaa00',boss:'#ff55ff'};
+
+  const COLS=60,ROWS=20;
+  let CW,CH,CELL;
+
+  function resize(){
+    const wrap=canvas.parentElement;
+    CW=wrap.clientWidth||600;
+    CH=320;
+    canvas.width=CW;
+    canvas.height=CH;
+    CELL=Math.floor(CW/COLS);
+  }
+
+  // Game state
+  let state='idle'; // idle | playing | paused | dead | win
+  let score=0,hiScore=0,lives=3,level=1;
+  let player,bullets,enemies,enemyBullets,stars,explosions,shields;
+  let enemyDir=1,enemyMoveTimer=0,enemyMoveInterval=60;
+  let enemyShootTimer=0;
+  let raf=null;
+  let keys={};
+
+  function initGame(){
+    resize();
+    player={x:CW/2,y:CH-CELL*2,w:CELL*2,h:CELL,speed:CELL*0.18,shield:false};
+    bullets=[];
+    enemyBullets=[];
+    explosions=[];
+    enemies=[];
+    shields=[];
+    score=0;
+    lives=3;
+    enemyDir=1;
+    enemyMoveInterval=Math.max(12,60-level*6);
+
+    // Stars background
+    stars=Array.from({length:60},()=>({x:Math.random()*CW,y:Math.random()*CH,s:Math.random()*1.5+0.5}));
+
+    // Enemies grid — 5 rows × 10 cols
+    const cols=10,rows=5;
+    const startX=(CW-(cols*(CELL*3+4)))/2;
+    for(let r=0;r<rows;r++){
+      for(let c=0;c<cols;c++){
+        const type=r<1?'boss':r<3?'mid':'basic';
+        enemies.push({
+          x:startX+c*(CELL*3+4),
+          y:CELL*2+r*(CELL*2+4),
+          w:CELL*2.5,h:CELL*1.5,
+          type,alive:true,
+          points:type==='boss'?50:type==='mid'?20:10,
+          frame:0
+        });
+      }
+    }
+
+    // Shields
+    const shieldCount=4;
+    for(let i=0;i<shieldCount;i++){
+      const sx=CW*(i+0.5)/(shieldCount+0)+40;
+      shields.push({x:CW*(i+1)/(shieldCount+1)-CELL*1.5,y:CH-CELL*5,w:CELL*3,h:CELL*1.5,hp:5});
+    }
+
+    updateHUD();
+  }
+
+  function updateHUD(){
+    scoreEl.textContent=score;
+    hiEl.textContent=hiScore;
+    livesEl.textContent='♥'.repeat(Math.max(0,lives));
+    levelEl.textContent=level;
+  }
+
+  // Drawing helpers
+  function drawChar(ch,x,y,color,size){
+    ctx.fillStyle=color;
+    ctx.font=`${size||CELL}px IBMVga,monospace`;
+    ctx.fillText(ch,x,y+CELL);
+  }
+
+  function drawRect(x,y,w,h,color){
+    ctx.fillStyle=color;
+    ctx.fillRect(x,y,w,h);
+  }
+
+  // Entities
+  function drawPlayer(){
+    ctx.fillStyle=C.player;
+    ctx.font=`${CELL*2}px IBMVga,monospace`;
+    ctx.fillText('▲',player.x-CELL,player.y);
+  }
+
+  const ENEMY_CHARS={basic:['▼','▽'],mid:['◆','◇'],boss:['★','☆']};
+  const ENEMY_COLORS={basic:C.enemy,mid:'#ff55ff',boss:'#ffff55'};
+
+  function drawEnemies(){
+    enemies.forEach(e=>{
+      if(!e.alive)return;
+      const ch=ENEMY_CHARS[e.type][e.frame%2];
+      ctx.fillStyle=ENEMY_COLORS[e.type];
+      ctx.font=`${CELL*1.6}px IBMVga,monospace`;
+      ctx.fillText(ch,e.x,e.y+CELL*1.2);
+    });
+  }
+
+  function drawBullets(){
+    bullets.forEach(b=>{
+      ctx.fillStyle=C.bullet;
+      ctx.fillRect(b.x,b.y,3,CELL);
+    });
+    enemyBullets.forEach(b=>{
+      ctx.fillStyle=C.enemyB;
+      ctx.fillRect(b.x,b.y,3,CELL);
+    });
+  }
+
+  function drawShields(){
+    shields.forEach(s=>{
+      if(s.hp<=0)return;
+      ctx.fillStyle=`rgba(85,255,85,${s.hp/5})`;
+      ctx.font=`${CELL*1.4}px IBMVga,monospace`;
+      ctx.fillText('▓▓▓',s.x,s.y+CELL);
+    });
+  }
+
+  function drawStars(){
+    stars.forEach(s=>{
+      ctx.fillStyle='#444';
+      ctx.fillRect(s.x,s.y,s.s,s.s);
+    });
+  }
+
+  function drawExplosions(){
+    explosions.forEach(e=>{
+      ctx.globalAlpha=e.life/20;
+      ctx.fillStyle=C.explo;
+      ctx.font=`${CELL*(1+e.life/10)}px IBMVga,monospace`;
+      ctx.fillText('*',e.x,e.y);
+      ctx.globalAlpha=1;
+    });
+  }
+
+  function drawHUD(){
+    ctx.fillStyle='#333';
+    ctx.fillRect(0,CH-CELL-2,CW,1);
+  }
+
+  function shoot(){
+    if(bullets.length<4){
+      bullets.push({x:player.x+2,y:player.y-CELL});
+    }
+  }
+
+  let shootCooldown=0;
+  function update(){
+    // Player movement
+    if((keys['ArrowLeft']||keys['a'])&&player.x>CELL) player.x-=player.speed;
+    if((keys['ArrowRight']||keys['d'])&&player.x<CW-CELL*2) player.x+=player.speed;
+    if(keys[' ']&&shootCooldown<=0){shoot();shootCooldown=18;}
+    if(shootCooldown>0)shootCooldown--;
+
+    // Stars scroll
+    stars.forEach(s=>{s.y+=0.3;if(s.y>CH){s.y=0;s.x=Math.random()*CW;}});
+
+    // Player bullets
+    bullets=bullets.filter(b=>{
+      b.y-=CELL*0.35;
+      // Hit enemies
+      enemies.forEach(e=>{
+        if(!e.alive)return;
+        if(b.x>e.x&&b.x<e.x+e.w&&b.y>e.y&&b.y<e.y+e.h){
+          e.alive=false;
+          score+=e.points;
+          if(score>hiScore)hiScore=score;
+          explosions.push({x:e.x,y:e.y,life:20});
+          b.y=-100;
+        }
+      });
+      // Hit shields
+      shields.forEach(s=>{
+        if(s.hp<=0)return;
+        if(b.x>s.x&&b.x<s.x+s.w&&b.y>s.y&&b.y<s.y+s.h){s.hp--;b.y=-100;}
+      });
+      return b.y>0;
+    });
+
+    // Enemy movement
+    enemyMoveTimer++;
+    if(enemyMoveTimer>=enemyMoveInterval){
+      enemyMoveTimer=0;
+      const alive=enemies.filter(e=>e.alive);
+      const maxX=Math.max(...alive.map(e=>e.x+e.w));
+      const minX=Math.min(...alive.map(e=>e.x));
+      if(maxX>CW-4||minX<4){
+        enemyDir*=-1;
+        enemies.forEach(e=>{if(e.alive)e.y+=CELL*0.8;});
+      }
+      enemies.forEach(e=>{if(e.alive){e.x+=CELL*enemyDir*1.5;e.frame++;}});
+    }
+
+    // Enemy shooting
+    enemyShootTimer++;
+    const shootRate=Math.max(20,60-level*5);
+    if(enemyShootTimer>=shootRate){
+      enemyShootTimer=0;
+      const alive=enemies.filter(e=>e.alive);
+      if(alive.length>0){
+        const shooter=alive[Math.floor(Math.random()*alive.length)];
+        enemyBullets.push({x:shooter.x+shooter.w/2,y:shooter.y+shooter.h});
+      }
+    }
+
+    // Enemy bullets
+    enemyBullets=enemyBullets.filter(b=>{
+      b.y+=CELL*0.22;
+      // Hit player
+      if(b.x>player.x-CELL&&b.x<player.x+CELL&&b.y>player.y&&b.y<player.y+CELL){
+        lives--;
+        explosions.push({x:player.x,y:player.y,life:20});
+        b.y=CH+100;
+        if(lives<=0){endGame(false);}
+      }
+      // Hit shields
+      shields.forEach(s=>{
+        if(s.hp<=0)return;
+        if(b.x>s.x&&b.x<s.x+s.w&&b.y>s.y&&b.y<s.y+s.h){s.hp--;b.y=CH+100;}
+      });
+      return b.y<CH;
+    });
+
+    // Explosions
+    explosions=explosions.filter(e=>{e.life--;return e.life>0;});
+
+    // Enemy reaches bottom
+    if(enemies.some(e=>e.alive&&e.y+e.h>player.y)){endGame(false);}
+
+    // All enemies dead — level up
+    if(!enemies.some(e=>e.alive)){
+      level++;
+      enemyMoveInterval=Math.max(8,60-level*6);
+      explosions=[];
+      setTimeout(()=>{
+        if(state==='playing'){
+          initGame();
+          level=Math.min(level,10);
+          updateHUD();
+        }
+      },800);
+    }
+
+    updateHUD();
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,CW,CH);
+    drawRect(0,0,CW,CH,C.bg);
+    drawStars();
+    drawShields();
+    drawEnemies();
+    drawBullets();
+    drawPlayer();
+    drawExplosions();
+    drawHUD();
+
+    // Scanline
+    for(let y=0;y<CH;y+=2){
+      ctx.fillStyle='rgba(0,0,0,0.12)';
+      ctx.fillRect(0,y,CW,1);
+    }
+  }
+
+  function gameLoop(){
+    if(state==='playing'){update();draw();}
+    raf=requestAnimationFrame(gameLoop);
+  }
+
+  function startGame(){
+    overlay.style.display='none';
+    state='playing';
+    level=1;
+    initGame();
+    if(!raf)raf=requestAnimationFrame(gameLoop);
+  }
+
+  function endGame(won){
+    state=won?'win':'dead';
+    if(score>hiScore)hiScore=score;
+    overlay.style.display='flex';
+    overlayMsg.textContent=won?`YOU WIN! SCORE: ${score} — Press ENTER to play again`:`GAME OVER — SCORE: ${score} — Press ENTER to restart`;
+    overlayMsg.style.color=won?'var(--bgreen)':'var(--bred)';
+    updateHUD();
+  }
+
+  // Controls
+  document.addEventListener('keydown',e=>{
+    if(editMode)return;
+    keys[e.key]=true;
+    if(e.key==='Enter'&&(state==='idle'||state==='dead'||state==='win'))startGame();
+    if(e.key==='p'||e.key==='P'){
+      if(state==='playing'){state='paused';overlay.style.display='flex';overlayMsg.textContent='PAUSED — Press P to resume';overlayMsg.style.color='var(--byellow)';}
+      else if(state==='paused'){state='playing';overlay.style.display='none';}
+    }
+    if(e.key===' ')e.preventDefault();
+  });
+  document.addEventListener('keyup',e=>{keys[e.key]=false;});
+
+  // Touch / tap support
+  let touchStartX=null;
+  canvas.addEventListener('touchstart',e=>{
+    e.preventDefault();
+    touchStartX=e.touches[0].clientX;
+    if(state==='idle'||state==='dead'||state==='win')startGame();
+  },{passive:false});
+  canvas.addEventListener('touchmove',e=>{
+    e.preventDefault();
+    const dx=e.touches[0].clientX-touchStartX;
+    player.x+=dx*0.4;
+    player.x=Math.max(CELL,Math.min(CW-CELL*2,player.x));
+    touchStartX=e.touches[0].clientX;
+  },{passive:false});
+  canvas.addEventListener('touchend',e=>{
+    e.preventDefault();
+    shoot();
+  },{passive:false});
+
+  // Click on overlay to start
+  overlay.addEventListener('click',()=>{
+    if(state==='idle'||state==='dead'||state==='win')startGame();
+    else if(state==='paused'){state='playing';overlay.style.display='none';}
+  });
+
+  // Start the render loop (idle state shows stars only)
+  resize();
+  initGame();
+  draw();
+  raf=requestAnimationFrame(gameLoop);
+
+  window.addEventListener('resize',()=>{
+    if(state!=='playing')resize();
+  });
+})();
 </script>
 </body>
 </html>
