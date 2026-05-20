@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE STROKES</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black: #0a0a0a;
+    --white: #f0ede8;
+    --off-white: #c8c4bc;
+    --accent: #e8e0d0;
+    --dim: #5a5750;
+    --red: #c8392b;
+    --line: rgba(240,237,232,0.12);
+    --edit-highlight: rgba(200, 160, 80, 0.15);
+    --edit-border: rgba(200, 160, 80, 0.5);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    overflow-x: hidden;
+    cursor: default;
+  }
+
+  /* ── EDIT MODE ── */
+  body.edit-mode [contenteditable] {
+    outline: none;
+    background: var(--edit-highlight);
+    border-bottom: 1px solid var(--edit-border);
+    cursor: text;
+    transition: background 0.2s;
+  }
+  body.edit-mode [contenteditable]:focus {
+    background: rgba(200, 160, 80, 0.25);
+  }
+  body:not(.edit-mode) [contenteditable] { cursor: inherit; }
+
+  /* ── EDIT TOOLBAR ── */
+  #edit-bar {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  #edit-toggle {
+    background: var(--white);
+    color: var(--black);
+    border: none;
+    padding: 10px 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  #edit-toggle:hover { background: var(--off-white); }
+  body.edit-mode #edit-toggle {
+    background: #c8a050;
+    color: var(--black);
+  }
+  #edit-hint {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 0.1em;
+    display: none;
+  }
+  body.edit-mode #edit-hint { display: block; }
+
+  /* ── HEADER ── */
+  header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+    height: 64px;
+    border-bottom: 1px solid var(--line);
+    background: rgba(10,10,10,0.92);
+    backdrop-filter: blur(8px);
+    transition: border-color 0.3s;
+  }
+  header.scrolled { border-color: var(--line); }
+
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px;
+    letter-spacing: 0.12em;
+    color: var(--white);
+    text-decoration: none;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+  }
+
+  .header-nav {
+    display: flex;
+    gap: 28px;
+    list-style: none;
+  }
+  .header-nav a {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--off-white);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .header-nav a:hover { color: var(--white); }
+
+  /* ── HAMBURGER ── */
+  .burger {
+    width: 32px;
+    height: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    position: relative;
+    z-index: 200;
+  }
+  .burger span {
+    display: block;
+    height: 1px;
+    background: var(--white);
+    transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.3s;
+    transform-origin: center;
+  }
+  .burger.open span:nth-child(1) { transform: translateY(9.5px) rotate(45deg); }
+  .burger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+  .burger.open span:nth-child(3) { transform: translateY(-9.5px) rotate(-45deg); }
+
+  /* ── OVERLAY NAV ── */
+  #overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--black);
+    z-index: 150;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 80px 60px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  #overlay.open {
+    opacity: 1;
+    pointer-events: all;
+  }
+  .overlay-nav {
+    list-style: none;
+  }
+  .overlay-nav li {
+    overflow: hidden;
+  }
+  .overlay-nav a {
+    display: block;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(52px, 8vw, 96px);
+    letter-spacing: 0.04em;
+    color: var(--white);
+    text-decoration: none;
+    line-height: 1.05;
+    transform: translateY(110%);
+    transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), color 0.2s;
+    display: block;
+    position: relative;
+  }
+  .overlay-nav a::after {
+    content: '';
+    position: absolute;
+    left: 0; bottom: 4px;
+    width: 0; height: 1px;
+    background: var(--white);
+    transition: width 0.3s ease;
+  }
+  .overlay-nav a:hover::after { width: 100%; }
+  .overlay-nav a:hover { color: var(--accent); }
+
+  #overlay.open .overlay-nav a {
+    transform: translateY(0);
+  }
+  #overlay.open .overlay-nav li:nth-child(1) a { transition-delay: 0.05s; }
+  #overlay.open .overlay-nav li:nth-child(2) a { transition-delay: 0.10s; }
+  #overlay.open .overlay-nav li:nth-child(3) a { transition-delay: 0.15s; }
+  #overlay.open .overlay-nav li:nth-child(4) a { transition-delay: 0.20s; }
+  #overlay.open .overlay-nav li:nth-child(5) a { transition-delay: 0.25s; }
+  #overlay.open .overlay-nav li:nth-child(6) a { transition-delay: 0.30s; }
+
+  .overlay-footer {
+    margin-top: 48px;
+    display: flex;
+    gap: 24px;
+    opacity: 0;
+    transition: opacity 0.4s 0.4s;
+  }
+  #overlay.open .overlay-footer { opacity: 1; }
+  .overlay-footer a {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--dim);
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .overlay-footer a:hover { color: var(--white); }
+
+  /* ── HERO ── */
+  #hero {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 0 40px 64px;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 60% 40%, rgba(30,20,10,0.0) 0%, rgba(10,10,10,0.7) 100%),
+      linear-gradient(to bottom, transparent 40%, var(--black) 100%);
+    z-index: 1;
+  }
+
+  .hero-img {
+    position: absolute;
+    inset: 0;
+    background-image: url('https://images.squarespace-cdn.com/content/v1/5ca1afede8ba44e3783d4d93/1558554743617-YE2JFZR65WT0KBUZGX8Q/ke17ZwdGBToddI8pDm48kE3Q3xYcbBvVRxNhL_rjFJl7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UTa1R_SnSoIPsQ_SgEFVFUCwOFWYvBqTFWFh65F-HJPqhGdQ7gCQFKRQ95hJIvBzw/thestrokes.jpg');
+    background-size: cover;
+    background-position: center 20%;
+    filter: grayscale(30%) brightness(0.55);
+    z-index: 0;
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+  }
+
+  .hero-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--dim);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(72px, 12vw, 160px);
+    letter-spacing: 0.02em;
+    line-height: 0.9;
+    color: var(--white);
+    margin-bottom: 24px;
+  }
+
+  .hero-sub {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    color: var(--off-white);
+    max-width: 480px;
+    margin-bottom: 36px;
+    line-height: 1.7;
+  }
+
+  .hero-ctas {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .btn-primary {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    background: var(--white);
+    color: var(--black);
+    border: none;
+    padding: 14px 28px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: background 0.2s, color 0.2s;
+  }
+  .btn-primary:hover { background: var(--accent); }
+
+  .btn-ghost {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    background: transparent;
+    color: var(--off-white);
+    border: 1px solid rgba(240,237,232,0.3);
+    padding: 14px 28px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .btn-ghost:hover { border-color: var(--white); color: var(--white); }
+
+  .scroll-indicator {
+    position: absolute;
+    bottom: 32px;
+    right: 40px;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    opacity: 0.4;
+  }
+  .scroll-indicator span {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    writing-mode: vertical-rl;
+    text-transform: uppercase;
+    color: var(--off-white);
+  }
+  .scroll-line {
+    width: 1px;
+    height: 48px;
+    background: var(--off-white);
+    animation: scrollDown 2s ease-in-out infinite;
+  }
+  @keyframes scrollDown {
+    0% { transform: scaleY(0); transform-origin: top; }
+    50% { transform: scaleY(1); transform-origin: top; }
+    51% { transform: scaleY(1); transform-origin: bottom; }
+    100% { transform: scaleY(0); transform-origin: bottom; }
+  }
+
+  /* ── TICKER ── */
+  .ticker-wrap {
+    overflow: hidden;
+    border-bottom: 1px solid var(--line);
+    background: rgba(240,237,232,0.03);
+    height: 40px;
+    display: flex;
+    align-items: center;
+  }
+  .ticker {
+    display: flex;
+    gap: 0;
+    white-space: nowrap;
+    animation: ticker 30s linear infinite;
+  }
+  @keyframes ticker {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .ticker-item {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--dim);
+    padding: 0 40px;
+  }
+  .ticker-item span { color: var(--off-white); margin-right: 40px; }
+
+  /* ── SECTIONS ── */
+  section {
+    padding: 96px 40px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 56px;
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(40px, 6vw, 72px);
+    letter-spacing: 0.05em;
+    color: var(--white);
+    line-height: 1;
+  }
+
+  .section-link {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--dim);
+    text-decoration: none;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-link:hover { color: var(--white); }
+  .section-link::after { content: '→'; transition: transform 0.2s; }
+  .section-link:hover::after { transform: translateX(4px); }
+
+  /* ── NEWS GRID ── */
+  .news-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2px;
+  }
+
+  .news-card {
+    background: rgba(240,237,232,0.03);
+    border: 1px solid var(--line);
+    padding: 32px;
+    transition: background 0.25s;
+    cursor: pointer;
+  }
+  .news-card:hover { background: rgba(240,237,232,0.06); }
+
+  .news-date {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--dim);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .news-headline {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 0.04em;
+    color: var(--white);
+    line-height: 1.1;
+    margin-bottom: 12px;
+  }
+
+  .news-body {
+    font-size: 13px;
+    color: var(--off-white);
+    line-height: 1.7;
+  }
+
+  .news-tag {
+    display: inline-block;
+    margin-top: 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--dim);
+    border: 1px solid var(--line);
+    padding: 4px 10px;
+  }
+
+  /* ── FEATURED RELEASE ── */
+  #release {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    padding: 0;
+    min-height: 520px;
+  }
+
+  .release-cover {
+    background: #1a1510;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+  }
+
+  .release-cover-inner {
+    width: 220px;
+    height: 220px;
+    background: #2a2520;
+    border: 1px solid rgba(240,237,232,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .vinyl-ring {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    border: 1px solid rgba(240,237,232,0.15);
+    position: absolute;
+    animation: spin 12s linear infinite;
+  }
+  .vinyl-ring::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--black);
+    border: 1px solid rgba(240,237,232,0.2);
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .album-title-overlay {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 15px;
+    letter-spacing: 0.3em;
+    color: rgba(240,237,232,0.5);
+    text-transform: uppercase;
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 0 16px;
+  }
+
+  .release-info {
+    padding: 64px 56px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: rgba(240,237,232,0.02);
+    border-left: 1px solid var(--line);
+  }
+
+  .release-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--dim);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .release-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 6vw, 80px);
+    letter-spacing: 0.03em;
+    color: var(--white);
+    line-height: 0.95;
+    margin-bottom: 24px;
+  }
+
+  .release-desc {
+    font-size: 14px;
+    color: var(--off-white);
+    line-height: 1.75;
+    margin-bottom: 36px;
+    max-width: 400px;
+  }
+
+  .tracklist {
+    list-style: none;
+    margin-bottom: 40px;
+  }
+  .tracklist li {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--off-white);
+    transition: color 0.2s;
+    cursor: pointer;
+  }
+  .tracklist li:hover { color: var(--white); }
+  .tracklist li:last-child { border-bottom: none; }
+  .track-num {
+    color: var(--dim);
+    width: 20px;
+    text-align: right;
+    font-size: 10px;
+  }
+  .track-play {
+    width: 24px; height: 24px;
+    border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 8px;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .tracklist li:hover .track-play { opacity: 1; }
+  .track-name { flex: 1; }
+  .track-dur { color: var(--dim); font-size: 10px; }
+
+  /* ── TOUR SECTION ── */
+  .tour-list { list-style: none; }
+
+  .tour-item {
+    display: grid;
+    grid-template-columns: 120px 1fr auto auto;
+    align-items: center;
+    gap: 24px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--line);
+    transition: background 0.2s;
+  }
+  .tour-item:hover {
+    background: rgba(240,237,232,0.03);
+    padding-left: 12px;
+    margin-left: -12px;
+  }
+  .tour-date {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--dim);
+  }
+  .tour-venue-wrap { display: flex; flex-direction: column; gap: 4px; }
+  .tour-venue {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 0.04em;
+    color: var(--white);
+    line-height: 1;
+  }
+  .tour-city {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--off-white);
+    text-transform: uppercase;
+  }
+  .tour-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    border: 1px solid var(--line);
+    padding: 4px 10px;
+    color: var(--dim);
+  }
+  .tour-tag.sold-out {
+    border-color: rgba(200, 57, 43, 0.4);
+    color: var(--red);
+  }
+  .tour-tickets {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--white);
+    border: 1px solid rgba(240,237,232,0.3);
+    padding: 8px 16px;
+    text-decoration: none;
+    transition: background 0.2s, color 0.2s;
+    white-space: nowrap;
+  }
+  .tour-tickets:hover { background: var(--white); color: var(--black); }
+  .tour-tickets.sold { color: var(--dim); border-color: var(--line); pointer-events: none; }
+
+  /* ── VIDEO GRID ── */
+  .video-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+  }
+
+  .video-card {
+    position: relative;
+    aspect-ratio: 16/9;
+    overflow: hidden;
+    cursor: pointer;
+    background: #111;
+  }
+
+  .video-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(40%) brightness(0.7);
+    transition: filter 0.3s, transform 0.5s;
+  }
+
+  .video-card:hover .video-thumb {
+    filter: grayscale(0%) brightness(0.85);
+    transform: scale(1.04);
+  }
+
+  .video-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 20px;
+    background: linear-gradient(to top, rgba(10,10,10,0.9) 0%, transparent 60%);
+  }
+
+  .video-play-btn {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 48px; height: 48px;
+    border: 1px solid rgba(240,237,232,0.5);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 14px;
+    color: var(--white);
+  }
+  .video-card:hover .video-play-btn { opacity: 1; }
+
+  .video-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 0.05em;
+    color: var(--white);
+    line-height: 1.1;
+  }
+  .video-meta {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--dim);
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  /* ── PHOTO STRIP ── */
+  .photo-strip {
+    display: flex;
+    gap: 2px;
+    overflow: hidden;
+  }
+  .photo-strip-item {
+    flex: 1;
+    aspect-ratio: 3/4;
+    overflow: hidden;
+    filter: grayscale(60%) brightness(0.6);
+    transition: flex 0.5s cubic-bezier(0.23,1,0.32,1), filter 0.3s;
+    cursor: pointer;
+    background: #1a1a1a;
+    position: relative;
+  }
+  .photo-strip-item:hover {
+    flex: 3;
+    filter: grayscale(20%) brightness(0.8);
+  }
+  .photo-strip-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* ── NEWSLETTER ── */
+  #newsletter {
+    background: rgba(240,237,232,0.03);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: center;
+  }
+
+  .nl-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 5vw, 72px);
+    letter-spacing: 0.04em;
+    color: var(--white);
+    line-height: 1;
+    margin-bottom: 16px;
+  }
+  .nl-sub {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--dim);
+    letter-spacing: 0.1em;
+    line-height: 1.7;
+  }
+
+  .nl-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .nl-input-wrap {
+    display: flex;
+  }
+  .nl-input {
+    flex: 1;
+    background: transparent;
+    border: 1px solid rgba(240,237,232,0.2);
+    border-right: none;
+    padding: 14px 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--white);
+    letter-spacing: 0.05em;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .nl-input::placeholder { color: var(--dim); }
+  .nl-input:focus { border-color: rgba(240,237,232,0.5); }
+
+  .nl-submit {
+    background: var(--white);
+    color: var(--black);
+    border: none;
+    padding: 14px 24px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+  }
+  .nl-submit:hover { background: var(--accent); }
+
+  .nl-note {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    color: var(--dim);
+    text-transform: uppercase;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 48px 40px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .footer-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 0.1em;
+    color: var(--dim);
+  }
+
+  .footer-socials {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+  }
+  .footer-socials a {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--dim);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .footer-socials a:hover { color: var(--white); }
+
+  .footer-copy {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    color: var(--dim);
+    text-transform: uppercase;
+    text-align: right;
+  }
+
+  /* ── VIDEO MODAL ── */
+  #video-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.92);
+    z-index: 300;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  #video-modal.open { opacity: 1; pointer-events: all; }
+  .modal-inner {
+    width: min(800px, 90vw);
+    position: relative;
+  }
+  .modal-close {
+    position: absolute;
+    top: -40px; right: 0;
+    background: none;
+    border: none;
+    color: var(--off-white);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.2s;
+  }
+  .modal-close:hover { color: var(--white); }
+  .modal-video-wrap {
+    aspect-ratio: 16/9;
+    background: #000;
+    position: relative;
+  }
+  .modal-video-wrap iframe {
+    width: 100%; height: 100%;
+    border: none;
+  }
+
+  /* ── HORIZONTAL RULE ── */
+  hr { border: none; border-top: 1px solid var(--line); }
+
+  /* ── SCROLL ANIMATIONS ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(32px);
+    transition: opacity 0.7s cubic-bezier(0.23,1,0.32,1), transform 0.7s cubic-bezier(0.23,1,0.32,1);
+  }
+  .reveal.visible { opacity: 1; transform: none; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    header { padding: 0 24px; }
+    .header-nav { display: none; }
+    #hero { padding: 0 24px 48px; }
+    section { padding: 64px 24px; }
+    #release { grid-template-columns: 1fr; }
+    .release-cover { min-height: 280px; }
+    .release-info { padding: 40px 32px; }
+    #newsletter { grid-template-columns: 1fr; gap: 32px; }
+    footer { grid-template-columns: 1fr; text-align: center; }
+    .footer-copy { text-align: center; }
+    .video-grid { grid-template-columns: 1fr; }
+    .tour-item { grid-template-columns: 1fr auto; gap: 12px; }
+    .tour-date { display: none; }
+    .tour-tag { display: none; }
+    #overlay { padding: 80px 32px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header id="site-header">
+  <a href="#" class="logo" contenteditable="false">THE STROKES</a>
+  <div class="header-right">
+    <ul class="header-nav">
+      <li><a href="#news">News</a></li>
+      <li><a href="#music">Music</a></li>
+      <li><a href="#tour">Tour</a></li>
+      <li><a href="#videos">Videos</a></li>
+      <li><a href="#photos">Photos</a></li>
+    </ul>
+    <button class="burger" id="burger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<!-- ── OVERLAY NAV ── -->
+<nav id="overlay" aria-hidden="true">
+  <ul class="overlay-nav">
+    <li><a href="#news" class="overlay-link">News</a></li>
+    <li><a href="#music" class="overlay-link">Music</a></li>
+    <li><a href="#tour" class="overlay-link">Tour</a></li>
+    <li><a href="#videos" class="overlay-link">Videos</a></li>
+    <li><a href="#photos" class="overlay-link">Photos</a></li>
+    <li><a href="#newsletter" class="overlay-link">Mailing List</a></li>
+  </ul>
+  <div class="overlay-footer">
+    <a href="#">Spotify</a>
+    <a href="#">Apple Music</a>
+    <a href="#">Instagram</a>
+    <a href="#">Twitter / X</a>
+    <a href="#">YouTube</a>
+    <a href="#">Store</a>
+  </div>
+</nav>
+
+<!-- ── HERO ── -->
+<section id="hero" style="padding-top: 64px; border-bottom: 1px solid var(--line);">
+  <div class="hero-bg"></div>
+  <div class="hero-img"></div>
+  <div class="scroll-indicator">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+  <div class="hero-content">
+    <p class="hero-eyebrow" contenteditable="false">New Album — Out Now</p>
+    <h1 class="hero-title" contenteditable="false">Reality<br>Awaits</h1>
+    <p class="hero-sub" contenteditable="false">The sixth studio album from The Strokes. Raw. Uncut. Everything you've been waiting for.</p>
+    <div class="hero-ctas">
+      <a href="#music" class="btn-primary">Listen Now</a>
+      <a href="#tour" class="btn-ghost">Tour Dates</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── TICKER ── -->
+<div class="ticker-wrap">
+  <div class="ticker">
+    <span class="ticker-item"><span>Reality Awaits — Out Now</span> New Album Available Everywhere</span>
+    <span class="ticker-item"><span>On Tour Summer 2026</span> Tickets On Sale Now</span>
+    <span class="ticker-item"><span>Red Rocks — July 22 & 23</span> Morrison, Colorado</span>
+    <span class="ticker-item"><span>Outside Lands — August 8</span> San Francisco, CA</span>
+    <span class="ticker-item"><span>Reality Awaits — Out Now</span> New Album Available Everywhere</span>
+    <span class="ticker-item"><span>On Tour Summer 2026</span> Tickets On Sale Now</span>
+    <span class="ticker-item"><span>Red Rocks — July 22 & 23</span> Morrison, Colorado</span>
+    <span class="ticker-item"><span>Outside Lands — August 8</span> San Francisco, CA</span>
+  </div>
+</div>
+
+<!-- ── NEWS ── -->
+<section id="news">
+  <div class="section-header reveal">
+    <h2 class="section-title">News</h2>
+    <a href="#" class="section-link">All News</a>
+  </div>
+  <div class="news-grid">
+    <article class="news-card reveal">
+      <p class="news-date" contenteditable="false">May 14, 2026</p>
+      <h3 class="news-headline" contenteditable="false">The Strokes Debut "Falling Out Of Love" on The Late Show</h3>
+      <p class="news-body" contenteditable="false">Julian and the boys took over the Ed Sullivan Theater for a blistering live performance of the new single, giving late night television the jolt it didn't know it needed.</p>
+      <span class="news-tag">TV Appearance</span>
+    </article>
+    <article class="news-card reveal" style="transition-delay: 0.1s;">
+      <p class="news-date" contenteditable="false">April 13, 2026</p>
+      <h3 class="news-headline" contenteditable="false">Global Tour Announced — Summer 2026</h3>
+      <p class="news-body" contenteditable="false">From Red Rocks to Bonnaroo, Outside Lands to Summer Sonic — The Strokes are taking Reality Awaits on the road. Pre-sale registration now open.</p>
+      <span class="news-tag">Tour</span>
+    </article>
+    <article class="news-card reveal" style="transition-delay: 0.2s;">
+      <p class="news-date" contenteditable="false">March 28, 2026</p>
+      <h3 class="news-headline" contenteditable="false">"Reality Awaits" — Album Announcement</h3>
+      <p class="news-body" contenteditable="false">The sixth studio album arrives this summer. Recorded over two years in New York and Los Angeles. Pre-order now and receive an instant download of "Falling Out Of Love."</p>
+      <span class="news-tag">Album</span>
+    </article>
+  </div>
+</section>
+
+<!-- ── FEATURED RELEASE ── -->
+<div id="release">
+  <div class="release-cover">
+    <div class="release-cover-inner">
+      <div class="vinyl-ring"></div>
+      <p class="album-title-overlay" contenteditable="false">Reality Awaits</p>
+    </div>
+  </div>
+  <div class="release-info">
+    <p class="release-label reveal" contenteditable="false">Latest Release — 2026</p>
+    <h2 class="release-title reveal" contenteditable="false">Reality<br>Awaits</h2>
+    <p class="release-desc reveal" contenteditable="false">Produced by Rick Rubin. Recorded at Electric Lady Studios, New York. 11 tracks of pure Strokes energy—jagged guitars, propulsive rhythms, and Julian Casablancas at his most confessional.</p>
+    <ul class="tracklist reveal" id="tracklist">
+      <li data-preview=""><span class="track-num">01</span><span class="track-play">▶</span><span class="track-name" contenteditable="false">Falling Out Of Love</span><span class="track-dur">3:18</span></li>
+      <li><span class="track-num">02</span><span class="track-play">▶</span><span class="track-name" contenteditable="false">Automatic City</span><span class="track-dur">2:54</span></li>
+      <li><span class="track-num">03</span><span class="track-play">▶</span><span class="track-name" contenteditable="false">Neon Bruise</span><span class="track-dur">3:42</span></li>
+      <li><span class="track-num">04</span><span class="track-play">▶</span><span class="track-name" contenteditable="false">Glass Routine</span><span class="track-dur">3:07</span></li>
+      <li><span class="track-num">05</span><span class="track-play">▶</span><span class="track-name" contenteditable="false">Hard Luck Avenue</span><span class="track-dur">4:01</span></li>
+    </ul>
+    <div style="display:flex;gap:12px;">
+      <a href="#" class="btn-primary reveal">Stream Everywhere</a>
+      <a href="#" class="btn-ghost reveal" style="transition-delay:0.1s;">Order Vinyl</a>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOUR ── -->
+<section id="tour">
+  <div class="section-header reveal">
+    <h2 class="section-title">Tour</h2>
+    <a href="#" class="section-link">All Dates</a>
+  </div>
+  <ul class="tour-list" id="tour-list">
+    <li class="tour-item reveal">
+      <span class="tour-date" contenteditable="false">Jul 12, 2026</span>
+      <div class="tour-venue-wrap">
+        <span class="tour-venue" contenteditable="false">Allianz Amphitheater</span>
+        <span class="tour-city" contenteditable="false">Richmond, VA</span>
+      </div>
+      <span class="tour-tag">On Sale</span>
+      <a href="#" class="tour-tickets">Tickets</a>
+    </li>
+    <li class="tour-item reveal" style="transition-delay:0.05s;">
+      <span class="tour-date" contenteditable="false">Jul 15, 2026</span>
+      <div class="tour-venue-wrap">
+        <span class="tour-venue" contenteditable="false">Ruoff Music Center</span>
+        <span class="tour-city" contenteditable="false">Noblesville, IN</span>
+      </div>
+      <span class="tour-tag">On Sale</span>
+      <a href="#" class="tour-tickets">Tickets</a>
+    </li>
+    <li class="tour-item reveal" style="transition-delay:0.1s;">
+      <span class="tour-date" contenteditable="false">Jul 17, 2026</span>
+      <div class="tour-venue-wrap">
+        <span class="tour-venue" contenteditable="false">American Family Insurance Amphitheater</span>
+        <span class="tour-city" contenteditable="false">Milwaukee, WI</span>
+      </div>
+      <span class="tour-tag">On Sale</span>
+      <a href="#" class="tour-tickets">Tickets</a>
+    </li>
+    <li class="tour-item reveal" style="transition-delay:0.15s;">
+      <span class="tour-date" contenteditable="false">Jul 22, 2026</span>
+      <div class="tour-venue-wrap">
+        <span class="tour-venue" contenteditable="false">Red Rocks Amphitheatre</span>
+        <span class="tour-city" contenteditable="false">Morrison, CO</span>
+      </div>
+      <span class="tour-tag sold-out">Sold Out</span>
+      <a href="#" class="tour-tickets sold">Sold Out</a>
+    </li>
+    <li class="tour-item reveal" style="transition-delay:0.2s;">
+      <span class="tour-date" contenteditable="false">Jul 23, 2026</span>
+      <div class="tour-venue-wrap">
+        <span class="tour-venue" contenteditable="false">Red Rocks Amphitheatre</span>
+        <span class="tour-city" contenteditable="false">Morrison, CO</span>
+      </div>
+      <span class="tour-tag sold-out">Sold Out</span>
+      <a href="#" class="tour-tickets sold">Sold Out</a>
+    </li>
+    <li class="tour-item reveal" style="transition-delay:0.25s;">
+      <span class="tour-date" contenteditable="false">Aug 8, 2026</span>
+      <div class="tour-venue-wrap">
+        <span class="tour-venue" contenteditable="false">Outside Lands Music Festival</span>
+        <span class="tour-city" contenteditable="false">San Francisco, CA</span>
+      </div>
+      <span class="tour-tag">Festival</span>
+      <a href="#" class="tour-tickets">Tickets</a>
+    </li>
+    <li class="tour-item reveal" style="transition-delay:0.3s;">
+      <span class="tour-date" contenteditable="false">Aug 14, 2026</span>
+      <div class="tour-venue-wrap">
+        <span class="tour-venue" contenteditable="false">Summer Sonic</span>
+        <span class="tour-city" contenteditable="false">Tokyo, Japan</span>
+      </div>
+      <span class="tour-tag">Festival</span>
+      <a href="#" class="tour-tickets">Tickets</a>
+    </li>
+  </ul>
+</section>
+
+<!-- ── VIDEOS ── -->
+<section id="videos">
+  <div class="section-header reveal">
+    <h2 class="section-title">Videos</h2>
+    <a href="#" class="section-link">All Videos</a>
+  </div>
+  <div class="video-grid">
+    <div class="video-card reveal" data-video="https://www.youtube.com/embed/FT3ODekzSbE?autoplay=1">
+      <img class="video-thumb" src="https://img.youtube.com/vi/FT3ODekzSbE/maxresdefault.jpg" alt="Someday" loading="lazy">
+      <div class="video-overlay">
+        <div class="video-play-btn">▶</div>
+        <p class="video-title" contenteditable="false">Someday</p>
+        <p class="video-meta" contenteditable="false">Official Video · 2001</p>
+      </div>
+    </div>
+    <div class="video-card reveal" style="transition-delay:0.1s;" data-video="https://www.youtube.com/embed/oLMBMGCxFvg?autoplay=1">
+      <img class="video-thumb" src="https://img.youtube.com/vi/oLMBMGCxFvg/maxresdefault.jpg" alt="Hard To Explain" loading="lazy">
+      <div class="video-overlay">
+        <div class="video-play-btn">▶</div>
+        <p class="video-title" contenteditable="false">Hard To Explain</p>
+        <p class="video-meta" contenteditable="false">Official Video · 2001</p>
+      </div>
+    </div>
+    <div class="video-card reveal" style="transition-delay:0.2s;" data-video="https://www.youtube.com/embed/UAy2Z0m_pAo?autoplay=1">
+      <img class="video-thumb" src="https://img.youtube.com/vi/UAy2Z0m_pAo/maxresdefault.jpg" alt="Last Nite" loading="lazy">
+      <div class="video-overlay">
+        <div class="video-play-btn">▶</div>
+        <p class="video-title" contenteditable="false">Last Nite</p>
+        <p class="video-meta" contenteditable="false">Official Video · 2001</p>
+      </div>
+    </div>
+    <div class="video-card reveal" style="transition-delay:0.05s;" data-video="https://www.youtube.com/embed/49YVZQ8hK0A?autoplay=1">
+      <img class="video-thumb" src="https://img.youtube.com/vi/49YVZQ8hK0A/maxresdefault.jpg" alt="12:51" loading="lazy">
+      <div class="video-overlay">
+        <div class="video-play-btn">▶</div>
+        <p class="video-title" contenteditable="false">12:51</p>
+        <p class="video-meta" contenteditable="false">Official Video · 2003</p>
+      </div>
+    </div>
+    <div class="video-card reveal" style="transition-delay:0.15s;" data-video="https://www.youtube.com/embed/LWBnZiUO3Q4?autoplay=1">
+      <img class="video-thumb" src="https://img.youtube.com/vi/LWBnZiUO3Q4/maxresdefault.jpg" alt="Reptilia" loading="lazy">
+      <div class="video-overlay">
+        <div class="video-play-btn">▶</div>
+        <p class="video-title" contenteditable="false">Reptilia</p>
+        <p class="video-meta" contenteditable="false">Official Video · 2004</p>
+      </div>
+    </div>
+    <div class="video-card reveal" style="transition-delay:0.25s;" data-video="https://www.youtube.com/embed/hEa-4Yuz_2A?autoplay=1">
+      <img class="video-thumb" src="https://img.youtube.com/vi/hEa-4Yuz_2A/maxresdefault.jpg" alt="Bad Decisions" loading="lazy">
+      <div class="video-overlay">
+        <div class="video-play-btn">▶</div>
+        <p class="video-title" contenteditable="false">Bad Decisions</p>
+        <p class="video-meta" contenteditable="false">Official Video · 2020</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── PHOTOS ── -->
+<section id="photos" style="padding-bottom: 0;">
+  <div class="section-header reveal" style="padding-bottom: 0; margin-bottom: 32px;">
+    <h2 class="section-title">Photos</h2>
+    <a href="#" class="section-link">All Photos</a>
+  </div>
+</section>
+<div class="photo-strip reveal">
+  <div class="photo-strip-item">
+    <img class="photo-strip-img" src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&q=80" alt="Band photo 1">
+  </div>
+  <div class="photo-strip-item">
+    <img class="photo-strip-img" src="https://images.unsplash.com/photo-1468164016595-6108e4c60c8b?w=400&q=80" alt="Live photo">
+  </div>
+  <div class="photo-strip-item">
+    <img class="photo-strip-img" src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=400&q=80" alt="Concert photo">
+  </div>
+  <div class="photo-strip-item">
+    <img class="photo-strip-img" src="https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?w=400&q=80" alt="Stage photo">
+  </div>
+  <div class="photo-strip-item">
+    <img class="photo-strip-img" src="https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?w=400&q=80" alt="Band photo 2">
+  </div>
+</div>
+
+<!-- ── NEWSLETTER ── -->
+<section id="newsletter">
+  <div>
+    <h2 class="nl-title reveal" contenteditable="false">Join The<br>Mailing List</h2>
+    <p class="nl-sub reveal" contenteditable="false">Be the first to hear about new music,<br>tour announcements, and exclusive content.</p>
+  </div>
+  <div class="nl-form reveal">
+    <div class="nl-input-wrap">
+      <input type="email" class="nl-input" placeholder="your@email.com">
+      <button class="nl-submit" id="nl-btn">Subscribe</button>
+    </div>
+    <p class="nl-note">No spam. Unsubscribe anytime.</p>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <p class="footer-logo">The Strokes</p>
+  <div class="footer-socials">
+    <a href="#">Spotify</a>
+    <a href="#">Instagram</a>
+    <a href="#">X</a>
+    <a href="#">YouTube</a>
+    <a href="#">Store</a>
+  </div>
+  <p class="footer-copy" contenteditable="false">© 2026 The Strokes. All rights reserved.</p>
+</footer>
+
+<!-- ── VIDEO MODAL ── -->
+<div id="video-modal">
+  <div class="modal-inner">
+    <button class="modal-close" id="modal-close">✕ Close</button>
+    <div class="modal-video-wrap" id="modal-video-wrap"></div>
+  </div>
+</div>
+
+<!-- ── EDIT TOOLBAR ── -->
+<div id="edit-bar">
+  <span id="edit-hint">Click any text to edit</span>
+  <button id="edit-toggle">Edit Mode</button>
+</div>
+
+<script>
+  /* ── BURGER / OVERLAY ── */
+  const burger = document.getElementById('burger');
+  const overlay = document.getElementById('overlay');
+  const overlayLinks = document.querySelectorAll('.overlay-link');
+
+  burger.addEventListener('click', () => {
+    const isOpen = overlay.classList.toggle('open');
+    burger.classList.toggle('open', isOpen);
+    overlay.setAttribute('aria-hidden', !isOpen);
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+  });
+
+  overlayLinks.forEach(link => {
+    link.addEventListener('click', () => {
+      overlay.classList.remove('open');
+      burger.classList.remove('open');
+      overlay.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    });
+  });
+
+  /* ── SCROLL HEADER ── */
+  const header = document.getElementById('site-header');
+  window.addEventListener('scroll', () => {
+    header.classList.toggle('scrolled', window.scrollY > 60);
+  }, { passive: true });
+
+  /* ── REVEAL ON SCROLL ── */
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+  reveals.forEach(r => observer.observe(r));
+
+  /* ── VIDEO MODAL ── */
+  const modal = document.getElementById('video-modal');
+  const modalWrap = document.getElementById('modal-video-wrap');
+  const modalClose = document.getElementById('modal-close');
+
+  document.querySelectorAll('.video-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const src = card.dataset.video;
+      if (!src) return;
+      modalWrap.innerHTML = `<iframe src="${src}" allowfullscreen allow="autoplay"></iframe>`;
+      modal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    });
+  });
+
+  modalClose.addEventListener('click', closeModal);
+  modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+  function closeModal() {
+    modal.classList.remove('open');
+    modalWrap.innerHTML = '';
+    document.body.style.overflow = '';
+  }
+
+  /* ── TRACKLIST PLAY ── */
+  document.querySelectorAll('.tracklist li').forEach(li => {
+    li.addEventListener('click', () => {
+      document.querySelectorAll('.tracklist li').forEach(l => l.style.color = '');
+      li.style.color = 'var(--white)';
+    });
+  });
+
+  /* ── NEWSLETTER SUBMIT ── */
+  const nlBtn = document.getElementById('nl-btn');
+  const nlInput = document.querySelector('.nl-input');
+  nlBtn.addEventListener('click', () => {
+    if (!nlInput.value.includes('@')) {
+      nlInput.style.borderColor = 'rgba(200,57,43,0.6)';
+      setTimeout(() => nlInput.style.borderColor = '', 1200);
+      return;
+    }
+    nlBtn.textContent = 'Subscribed ✓';
+    nlBtn.style.background = '#4a7c59';
+    nlBtn.style.color = '#fff';
+    nlInput.value = '';
+    setTimeout(() => {
+      nlBtn.textContent = 'Subscribe';
+      nlBtn.style.background = '';
+      nlBtn.style.color = '';
+    }, 3000);
+  });
+
+  /* ── EDIT MODE ── */
+  const editToggle = document.getElementById('edit-toggle');
+  let editMode = false;
+
+  editToggle.addEventListener('click', () => {
+    editMode = !editMode;
+    document.body.classList.toggle('edit-mode', editMode);
+    editToggle.textContent = editMode ? 'Done Editing' : 'Edit Mode';
+
+    document.querySelectorAll('[contenteditable]').forEach(el => {
+      el.contentEditable = editMode ? 'true' : 'false';
+    });
+  });
+
+  /* Set all contenteditable to false on load */
+  document.querySelectorAll('[contenteditable]').forEach(el => {
+    el.contentEditable = 'false';
+  });
+</script>
+</body>
+</html>
