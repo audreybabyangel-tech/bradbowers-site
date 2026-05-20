@@ -3,1403 +3,1047 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>THE STROKES</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<title>BRAD BOWERS — OFFICIAL SITE</title>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --black: #0a0a0a;
-    --white: #f0ede8;
-    --off-white: #c8c4bc;
-    --accent: #e8e0d0;
-    --dim: #5a5750;
-    --red: #c8392b;
-    --line: rgba(240,237,232,0.12);
-    --edit-highlight: rgba(200, 160, 80, 0.15);
-    --edit-border: rgba(200, 160, 80, 0.5);
-  }
-
-  html { scroll-behavior: smooth; }
-
-  body {
-    background: var(--black);
-    color: var(--white);
-    font-family: 'DM Sans', sans-serif;
-    font-weight: 300;
-    overflow-x: hidden;
-    cursor: default;
-  }
-
-  /* ── EDIT MODE ── */
-  body.edit-mode [contenteditable] {
-    outline: none;
-    background: var(--edit-highlight);
-    border-bottom: 1px solid var(--edit-border);
-    cursor: text;
-    transition: background 0.2s;
-  }
-  body.edit-mode [contenteditable]:focus {
-    background: rgba(200, 160, 80, 0.25);
-  }
-  body:not(.edit-mode) [contenteditable] { cursor: inherit; }
-
-  /* ── EDIT TOOLBAR ── */
-  #edit-bar {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  #edit-toggle {
-    background: var(--white);
-    color: var(--black);
-    border: none;
-    padding: 10px 20px;
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s;
-  }
-  #edit-toggle:hover { background: var(--off-white); }
-  body.edit-mode #edit-toggle {
-    background: #c8a050;
-    color: var(--black);
-  }
-  #edit-hint {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    color: var(--dim);
-    letter-spacing: 0.1em;
-    display: none;
-  }
-  body.edit-mode #edit-hint { display: block; }
-
-  /* ── HEADER ── */
-  header {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 40px;
-    height: 64px;
-    border-bottom: 1px solid var(--line);
-    background: rgba(10,10,10,0.92);
-    backdrop-filter: blur(8px);
-    transition: border-color 0.3s;
-  }
-  header.scrolled { border-color: var(--line); }
-
-  .logo {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 26px;
-    letter-spacing: 0.12em;
-    color: var(--white);
-    text-decoration: none;
-  }
-
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 32px;
-  }
-
-  .header-nav {
-    display: flex;
-    gap: 28px;
-    list-style: none;
-  }
-  .header-nav a {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--off-white);
-    text-decoration: none;
-    transition: color 0.2s;
-  }
-  .header-nav a:hover { color: var(--white); }
-
-  /* ── HAMBURGER ── */
-  .burger {
-    width: 32px;
-    height: 20px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    cursor: pointer;
-    background: none;
-    border: none;
-    padding: 0;
-    position: relative;
-    z-index: 200;
-  }
-  .burger span {
-    display: block;
-    height: 1px;
-    background: var(--white);
-    transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.3s;
-    transform-origin: center;
-  }
-  .burger.open span:nth-child(1) { transform: translateY(9.5px) rotate(45deg); }
-  .burger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
-  .burger.open span:nth-child(3) { transform: translateY(-9.5px) rotate(-45deg); }
-
-  /* ── OVERLAY NAV ── */
-  #overlay {
-    position: fixed;
-    inset: 0;
-    background: var(--black);
-    z-index: 150;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 80px 60px;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-  }
-  #overlay.open {
-    opacity: 1;
-    pointer-events: all;
-  }
-  .overlay-nav {
-    list-style: none;
-  }
-  .overlay-nav li {
-    overflow: hidden;
-  }
-  .overlay-nav a {
-    display: block;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(52px, 8vw, 96px);
-    letter-spacing: 0.04em;
-    color: var(--white);
-    text-decoration: none;
-    line-height: 1.05;
-    transform: translateY(110%);
-    transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), color 0.2s;
-    display: block;
-    position: relative;
-  }
-  .overlay-nav a::after {
-    content: '';
-    position: absolute;
-    left: 0; bottom: 4px;
-    width: 0; height: 1px;
-    background: var(--white);
-    transition: width 0.3s ease;
-  }
-  .overlay-nav a:hover::after { width: 100%; }
-  .overlay-nav a:hover { color: var(--accent); }
-
-  #overlay.open .overlay-nav a {
-    transform: translateY(0);
-  }
-  #overlay.open .overlay-nav li:nth-child(1) a { transition-delay: 0.05s; }
-  #overlay.open .overlay-nav li:nth-child(2) a { transition-delay: 0.10s; }
-  #overlay.open .overlay-nav li:nth-child(3) a { transition-delay: 0.15s; }
-  #overlay.open .overlay-nav li:nth-child(4) a { transition-delay: 0.20s; }
-  #overlay.open .overlay-nav li:nth-child(5) a { transition-delay: 0.25s; }
-  #overlay.open .overlay-nav li:nth-child(6) a { transition-delay: 0.30s; }
-
-  .overlay-footer {
-    margin-top: 48px;
-    display: flex;
-    gap: 24px;
-    opacity: 0;
-    transition: opacity 0.4s 0.4s;
-  }
-  #overlay.open .overlay-footer { opacity: 1; }
-  .overlay-footer a {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.15em;
-    color: var(--dim);
-    text-decoration: none;
-    text-transform: uppercase;
-    transition: color 0.2s;
-  }
-  .overlay-footer a:hover { color: var(--white); }
-
-  /* ── HERO ── */
-  #hero {
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    padding: 0 40px 64px;
-    position: relative;
-    overflow: hidden;
-    border-bottom: 1px solid var(--line);
-  }
-
-  .hero-bg {
-    position: absolute;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 80% 60% at 60% 40%, rgba(30,20,10,0.0) 0%, rgba(10,10,10,0.7) 100%),
-      linear-gradient(to bottom, transparent 40%, var(--black) 100%);
-    z-index: 1;
-  }
-
-  .hero-img {
-    position: absolute;
-    inset: 0;
-    background-image: url('https://images.squarespace-cdn.com/content/v1/5ca1afede8ba44e3783d4d93/1558554743617-YE2JFZR65WT0KBUZGX8Q/ke17ZwdGBToddI8pDm48kE3Q3xYcbBvVRxNhL_rjFJl7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UTa1R_SnSoIPsQ_SgEFVFUCwOFWYvBqTFWFh65F-HJPqhGdQ7gCQFKRQ95hJIvBzw/thestrokes.jpg');
-    background-size: cover;
-    background-position: center 20%;
-    filter: grayscale(30%) brightness(0.55);
-    z-index: 0;
-  }
-
-  .hero-content {
-    position: relative;
-    z-index: 2;
-  }
-
-  .hero-eyebrow {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.2em;
-    color: var(--dim);
-    text-transform: uppercase;
-    margin-bottom: 16px;
-  }
-
-  .hero-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(72px, 12vw, 160px);
-    letter-spacing: 0.02em;
-    line-height: 0.9;
-    color: var(--white);
-    margin-bottom: 24px;
-  }
-
-  .hero-sub {
-    font-family: 'DM Mono', monospace;
-    font-size: 13px;
-    letter-spacing: 0.1em;
-    color: var(--off-white);
-    max-width: 480px;
-    margin-bottom: 36px;
-    line-height: 1.7;
-  }
-
-  .hero-ctas {
-    display: flex;
-    gap: 16px;
-    align-items: center;
-  }
-
-  .btn-primary {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    background: var(--white);
-    color: var(--black);
-    border: none;
-    padding: 14px 28px;
-    cursor: pointer;
-    text-decoration: none;
-    display: inline-block;
-    transition: background 0.2s, color 0.2s;
-  }
-  .btn-primary:hover { background: var(--accent); }
-
-  .btn-ghost {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    background: transparent;
-    color: var(--off-white);
-    border: 1px solid rgba(240,237,232,0.3);
-    padding: 14px 28px;
-    cursor: pointer;
-    text-decoration: none;
-    display: inline-block;
-    transition: border-color 0.2s, color 0.2s;
-  }
-  .btn-ghost:hover { border-color: var(--white); color: var(--white); }
-
-  .scroll-indicator {
-    position: absolute;
-    bottom: 32px;
-    right: 40px;
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    opacity: 0.4;
-  }
-  .scroll-indicator span {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.2em;
-    writing-mode: vertical-rl;
-    text-transform: uppercase;
-    color: var(--off-white);
-  }
-  .scroll-line {
-    width: 1px;
-    height: 48px;
-    background: var(--off-white);
-    animation: scrollDown 2s ease-in-out infinite;
-  }
-  @keyframes scrollDown {
-    0% { transform: scaleY(0); transform-origin: top; }
-    50% { transform: scaleY(1); transform-origin: top; }
-    51% { transform: scaleY(1); transform-origin: bottom; }
-    100% { transform: scaleY(0); transform-origin: bottom; }
-  }
-
-  /* ── TICKER ── */
-  .ticker-wrap {
-    overflow: hidden;
-    border-bottom: 1px solid var(--line);
-    background: rgba(240,237,232,0.03);
-    height: 40px;
-    display: flex;
-    align-items: center;
-  }
-  .ticker {
-    display: flex;
-    gap: 0;
-    white-space: nowrap;
-    animation: ticker 30s linear infinite;
-  }
-  @keyframes ticker {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-  }
-  .ticker-item {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--dim);
-    padding: 0 40px;
-  }
-  .ticker-item span { color: var(--off-white); margin-right: 40px; }
-
-  /* ── SECTIONS ── */
-  section {
-    padding: 96px 40px;
-    border-bottom: 1px solid var(--line);
-  }
-
-  .section-header {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    margin-bottom: 56px;
-  }
-
-  .section-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(40px, 6vw, 72px);
-    letter-spacing: 0.05em;
-    color: var(--white);
-    line-height: 1;
-  }
-
-  .section-link {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--dim);
-    text-decoration: none;
-    transition: color 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .section-link:hover { color: var(--white); }
-  .section-link::after { content: '→'; transition: transform 0.2s; }
-  .section-link:hover::after { transform: translateX(4px); }
-
-  /* ── NEWS GRID ── */
-  .news-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 2px;
-  }
-
-  .news-card {
-    background: rgba(240,237,232,0.03);
-    border: 1px solid var(--line);
-    padding: 32px;
-    transition: background 0.25s;
-    cursor: pointer;
-  }
-  .news-card:hover { background: rgba(240,237,232,0.06); }
-
-  .news-date {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.15em;
-    color: var(--dim);
-    text-transform: uppercase;
-    margin-bottom: 16px;
-  }
-
-  .news-headline {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 28px;
-    letter-spacing: 0.04em;
-    color: var(--white);
-    line-height: 1.1;
-    margin-bottom: 12px;
-  }
-
-  .news-body {
-    font-size: 13px;
-    color: var(--off-white);
-    line-height: 1.7;
-  }
-
-  .news-tag {
-    display: inline-block;
-    margin-top: 20px;
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--dim);
-    border: 1px solid var(--line);
-    padding: 4px 10px;
-  }
-
-  /* ── FEATURED RELEASE ── */
-  #release {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0;
-    padding: 0;
-    min-height: 520px;
-  }
-
-  .release-cover {
-    background: #1a1510;
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 400px;
-  }
-
-  .release-cover-inner {
-    width: 220px;
-    height: 220px;
-    background: #2a2520;
-    border: 1px solid rgba(240,237,232,0.08);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-  }
-
-  .vinyl-ring {
-    width: 200px;
-    height: 200px;
-    border-radius: 50%;
-    border: 1px solid rgba(240,237,232,0.15);
-    position: absolute;
-    animation: spin 12s linear infinite;
-  }
-  .vinyl-ring::after {
-    content: '';
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%,-50%);
-    width: 32px; height: 32px;
-    border-radius: 50%;
-    background: var(--black);
-    border: 1px solid rgba(240,237,232,0.2);
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .album-title-overlay {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 15px;
-    letter-spacing: 0.3em;
-    color: rgba(240,237,232,0.5);
-    text-transform: uppercase;
-    position: relative;
-    z-index: 1;
-    text-align: center;
-    padding: 0 16px;
-  }
-
-  .release-info {
-    padding: 64px 56px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    background: rgba(240,237,232,0.02);
-    border-left: 1px solid var(--line);
-  }
-
-  .release-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    color: var(--dim);
-    text-transform: uppercase;
-    margin-bottom: 20px;
-  }
-
-  .release-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(48px, 6vw, 80px);
-    letter-spacing: 0.03em;
-    color: var(--white);
-    line-height: 0.95;
-    margin-bottom: 24px;
-  }
-
-  .release-desc {
-    font-size: 14px;
-    color: var(--off-white);
-    line-height: 1.75;
-    margin-bottom: 36px;
-    max-width: 400px;
-  }
-
-  .tracklist {
-    list-style: none;
-    margin-bottom: 40px;
-  }
-  .tracklist li {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    padding: 12px 0;
-    border-bottom: 1px solid var(--line);
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    color: var(--off-white);
-    transition: color 0.2s;
-    cursor: pointer;
-  }
-  .tracklist li:hover { color: var(--white); }
-  .tracklist li:last-child { border-bottom: none; }
-  .track-num {
-    color: var(--dim);
-    width: 20px;
-    text-align: right;
-    font-size: 10px;
-  }
-  .track-play {
-    width: 24px; height: 24px;
-    border: 1px solid var(--line);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 8px;
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-  .tracklist li:hover .track-play { opacity: 1; }
-  .track-name { flex: 1; }
-  .track-dur { color: var(--dim); font-size: 10px; }
-
-  /* ── TOUR SECTION ── */
-  .tour-list { list-style: none; }
-
-  .tour-item {
-    display: grid;
-    grid-template-columns: 120px 1fr auto auto;
-    align-items: center;
-    gap: 24px;
-    padding: 20px 0;
-    border-bottom: 1px solid var(--line);
-    transition: background 0.2s;
-  }
-  .tour-item:hover {
-    background: rgba(240,237,232,0.03);
-    padding-left: 12px;
-    margin-left: -12px;
-  }
-  .tour-date {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.1em;
-    color: var(--dim);
-  }
-  .tour-venue-wrap { display: flex; flex-direction: column; gap: 4px; }
-  .tour-venue {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 22px;
-    letter-spacing: 0.04em;
-    color: var(--white);
-    line-height: 1;
-  }
-  .tour-city {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.1em;
-    color: var(--off-white);
-    text-transform: uppercase;
-  }
-  .tour-tag {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    border: 1px solid var(--line);
-    padding: 4px 10px;
-    color: var(--dim);
-  }
-  .tour-tag.sold-out {
-    border-color: rgba(200, 57, 43, 0.4);
-    color: var(--red);
-  }
-  .tour-tickets {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--white);
-    border: 1px solid rgba(240,237,232,0.3);
-    padding: 8px 16px;
-    text-decoration: none;
-    transition: background 0.2s, color 0.2s;
-    white-space: nowrap;
-  }
-  .tour-tickets:hover { background: var(--white); color: var(--black); }
-  .tour-tickets.sold { color: var(--dim); border-color: var(--line); pointer-events: none; }
-
-  /* ── VIDEO GRID ── */
-  .video-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 2px;
-  }
-
-  .video-card {
-    position: relative;
-    aspect-ratio: 16/9;
-    overflow: hidden;
-    cursor: pointer;
-    background: #111;
-  }
-
-  .video-thumb {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    filter: grayscale(40%) brightness(0.7);
-    transition: filter 0.3s, transform 0.5s;
-  }
-
-  .video-card:hover .video-thumb {
-    filter: grayscale(0%) brightness(0.85);
-    transform: scale(1.04);
-  }
-
-  .video-overlay {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    padding: 20px;
-    background: linear-gradient(to top, rgba(10,10,10,0.9) 0%, transparent 60%);
-  }
-
-  .video-play-btn {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    width: 48px; height: 48px;
-    border: 1px solid rgba(240,237,232,0.5);
-    display: flex; align-items: center; justify-content: center;
-    opacity: 0;
-    transition: opacity 0.3s;
-    font-size: 14px;
-    color: var(--white);
-  }
-  .video-card:hover .video-play-btn { opacity: 1; }
-
-  .video-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 18px;
-    letter-spacing: 0.05em;
-    color: var(--white);
-    line-height: 1.1;
-  }
-  .video-meta {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.12em;
-    color: var(--dim);
-    text-transform: uppercase;
-    margin-top: 4px;
-  }
-
-  /* ── PHOTO STRIP ── */
-  .photo-strip {
-    display: flex;
-    gap: 2px;
-    overflow: hidden;
-  }
-  .photo-strip-item {
-    flex: 1;
-    aspect-ratio: 3/4;
-    overflow: hidden;
-    filter: grayscale(60%) brightness(0.6);
-    transition: flex 0.5s cubic-bezier(0.23,1,0.32,1), filter 0.3s;
-    cursor: pointer;
-    background: #1a1a1a;
-    position: relative;
-  }
-  .photo-strip-item:hover {
-    flex: 3;
-    filter: grayscale(20%) brightness(0.8);
-  }
-  .photo-strip-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  /* ── NEWSLETTER ── */
-  #newsletter {
-    background: rgba(240,237,232,0.03);
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 64px;
-    align-items: center;
-  }
-
-  .nl-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(48px, 5vw, 72px);
-    letter-spacing: 0.04em;
-    color: var(--white);
-    line-height: 1;
-    margin-bottom: 16px;
-  }
-  .nl-sub {
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    color: var(--dim);
-    letter-spacing: 0.1em;
-    line-height: 1.7;
-  }
-
-  .nl-form {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .nl-input-wrap {
-    display: flex;
-  }
-  .nl-input {
-    flex: 1;
-    background: transparent;
-    border: 1px solid rgba(240,237,232,0.2);
-    border-right: none;
-    padding: 14px 20px;
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    color: var(--white);
-    letter-spacing: 0.05em;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .nl-input::placeholder { color: var(--dim); }
-  .nl-input:focus { border-color: rgba(240,237,232,0.5); }
-
-  .nl-submit {
-    background: var(--white);
-    color: var(--black);
-    border: none;
-    padding: 14px 24px;
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: background 0.2s;
-    white-space: nowrap;
-  }
-  .nl-submit:hover { background: var(--accent); }
-
-  .nl-note {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.12em;
-    color: var(--dim);
-    text-transform: uppercase;
-  }
-
-  /* ── FOOTER ── */
-  footer {
-    padding: 48px 40px;
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-    gap: 24px;
-  }
-
-  .footer-logo {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 22px;
-    letter-spacing: 0.1em;
-    color: var(--dim);
-  }
-
-  .footer-socials {
-    display: flex;
-    gap: 24px;
-    justify-content: center;
-  }
-  .footer-socials a {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--dim);
-    text-decoration: none;
-    transition: color 0.2s;
-  }
-  .footer-socials a:hover { color: var(--white); }
-
-  .footer-copy {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.12em;
-    color: var(--dim);
-    text-transform: uppercase;
-    text-align: right;
-  }
-
-  /* ── VIDEO MODAL ── */
-  #video-modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.92);
-    z-index: 300;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s;
-  }
-  #video-modal.open { opacity: 1; pointer-events: all; }
-  .modal-inner {
-    width: min(800px, 90vw);
-    position: relative;
-  }
-  .modal-close {
-    position: absolute;
-    top: -40px; right: 0;
-    background: none;
-    border: none;
-    color: var(--off-white);
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: color 0.2s;
-  }
-  .modal-close:hover { color: var(--white); }
-  .modal-video-wrap {
-    aspect-ratio: 16/9;
-    background: #000;
-    position: relative;
-  }
-  .modal-video-wrap iframe {
-    width: 100%; height: 100%;
-    border: none;
-  }
-
-  /* ── HORIZONTAL RULE ── */
-  hr { border: none; border-top: 1px solid var(--line); }
-
-  /* ── SCROLL ANIMATIONS ── */
-  .reveal {
-    opacity: 0;
-    transform: translateY(32px);
-    transition: opacity 0.7s cubic-bezier(0.23,1,0.32,1), transform 0.7s cubic-bezier(0.23,1,0.32,1);
-  }
-  .reveal.visible { opacity: 1; transform: none; }
-
-  /* ── RESPONSIVE ── */
-  @media (max-width: 768px) {
-    header { padding: 0 24px; }
-    .header-nav { display: none; }
-    #hero { padding: 0 24px 48px; }
-    section { padding: 64px 24px; }
-    #release { grid-template-columns: 1fr; }
-    .release-cover { min-height: 280px; }
-    .release-info { padding: 40px 32px; }
-    #newsletter { grid-template-columns: 1fr; gap: 32px; }
-    footer { grid-template-columns: 1fr; text-align: center; }
-    .footer-copy { text-align: center; }
-    .video-grid { grid-template-columns: 1fr; }
-    .tour-item { grid-template-columns: 1fr auto; gap: 12px; }
-    .tour-date { display: none; }
-    .tour-tag { display: none; }
-    #overlay { padding: 80px 32px; }
-  }
+@font-face { font-family:'IBMVga'; src:url('https://int10h.org/oldschool-pc-fonts/fontlist/woff/web_ibm_vga_8x16.woff') format('woff'); }
+@font-face { font-family:'IBMCGA'; src:url('https://int10h.org/oldschool-pc-fonts/fontlist/woff/web_ibm_cga.woff') format('woff'); }
+@font-face { font-family:'Tandy';  src:url('https://int10h.org/oldschool-pc-fonts/fontlist/woff/web_tandy1k-ii_9x16.woff') format('woff'); }
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+:root{
+  --bg:#000; --fg:#aaa; --bright:#fff;
+  --green:#00aa00; --bgreen:#55ff55;
+  --cyan:#00aaaa;  --bcyan:#55ffff;
+  --yellow:#aaaa00;--byellow:#ffff55;
+  --blue:#0000aa;  --bblue:#5555ff;
+  --red:#aa0000;   --bred:#ff5555;
+  --magenta:#aa00aa;--bmagenta:#ff55ff;
+  --dgray:#555;
+  --vf:'IBMVga','IBMCGA','Tandy',monospace;
+}
+
+html{scroll-behavior:auto;}
+body{background:var(--bg);color:var(--fg);font-family:var(--vf);font-size:16px;line-height:16px;overflow-x:hidden;cursor:default;}
+
+/* CRT FX */
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(to bottom,transparent 0px,transparent 1px,rgba(0,0,0,0.18) 1px,rgba(0,0,0,0.18) 2px);pointer-events:none;z-index:9000;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 120% 120% at 50% 50%,rgba(0,170,0,0.04) 0%,transparent 70%);pointer-events:none;z-index:9001;}
+
+@keyframes blink  {0%,49%{opacity:1}50%,100%{opacity:0}}
+@keyframes blink2 {0%,49%{opacity:1}50%,100%{opacity:0}}
+@keyframes scroll-left{0%{transform:translateX(100vw)}100%{transform:translateX(-100%)}}
+
+/* ── EDIT MODE HIGHLIGHTING ── */
+/* When edit mode is ON, every editable element gets a yellow dashed outline */
+body.edit-mode .ed{outline:1px dashed var(--byellow);background:rgba(170,170,0,0.08);cursor:text;min-width:4px;min-height:16px;display:inline-block;}
+body.edit-mode .ed:hover{background:rgba(170,170,0,0.18);}
+body.edit-mode .ed:focus{background:rgba(170,170,0,0.25);outline:1px solid var(--byellow);}
+body.edit-mode .ed-block{outline:1px dashed var(--byellow);background:rgba(170,170,0,0.05);cursor:text;}
+body.edit-mode .ed-block:hover{background:rgba(170,170,0,0.12);}
+body.edit-mode .ed-block:focus{background:rgba(170,170,0,0.2);outline:1px solid var(--byellow);}
+/* Link editing: show URL inline */
+body.edit-mode .ed-link{outline:1px dashed var(--bmagenta)!important;background:rgba(255,85,255,0.08)!important;}
+body.edit-mode .ed-link:hover{background:rgba(255,85,255,0.16)!important;}
+/* Image src editing */
+body.edit-mode .ed-img-wrap{outline:1px dashed var(--bred);position:relative;}
+body.edit-mode .ed-img-wrap::after{content:'[IMG]';position:absolute;top:0;left:0;background:var(--bred);color:var(--bright);font-size:10px;padding:0 3px;pointer-events:none;}
+/* Non-edit mode: all contenteditable disabled */
+body:not(.edit-mode) .ed,.ed-block,.ed-link{cursor:inherit;}
+
+/* ── EDIT PANEL ── */
+#edit-panel{
+  position:fixed;bottom:0;left:0;right:0;
+  background:rgba(0,0,40,0.97);
+  border-top:2px solid var(--byellow);
+  font-family:var(--vf);font-size:13px;line-height:16px;
+  z-index:8000;padding:6px 12px 4px;
+  display:none;flex-wrap:wrap;gap:6px;align-items:center;
+}
+body.edit-mode #edit-panel{display:flex;}
+body.edit-mode #statusbar{bottom:40px;}
+.ep-label{color:var(--byellow);white-space:nowrap;}
+.ep-field{
+  background:var(--bg);border:1px solid var(--byellow);color:var(--bright);
+  font-family:var(--vf);font-size:13px;padding:1px 6px;height:18px;outline:none;
+  flex:1;min-width:140px;max-width:320px;
+}
+.ep-field:focus{border-color:var(--bcyan);}
+.ep-btn{
+  background:var(--blue);color:var(--bright);border:1px solid var(--bblue);
+  font-family:var(--vf);font-size:13px;padding:1px 10px;cursor:pointer;height:18px;white-space:nowrap;
+}
+.ep-btn:hover{background:var(--bblue);color:var(--bg);}
+.ep-btn.apply{background:var(--green);color:var(--bg);border-color:var(--bgreen);}
+.ep-btn.apply:hover{background:var(--bgreen);}
+.ep-btn.danger{background:var(--red);color:var(--bright);border-color:var(--bred);}
+.ep-btn.danger:hover{background:var(--bred);}
+.ep-sep{color:var(--dgray);padding:0 4px;}
+.ep-info{color:var(--dgray);font-size:12px;white-space:nowrap;}
+#ep-target-name{color:var(--bcyan);font-weight:bold;}
+
+/* ── EDIT TOOLBAR (fixed bottom-right) ── */
+#edit-bar{position:fixed;bottom:20px;right:8px;z-index:9998;display:flex;align-items:center;gap:6px;}
+body.edit-mode #edit-bar{bottom:48px;}
+#edit-toggle{background:var(--blue);color:var(--bright);border:1px solid var(--bblue);font-family:var(--vf);font-size:13px;padding:1px 10px;cursor:pointer;height:18px;}
+#edit-toggle:hover{background:var(--bblue);color:var(--bg);}
+body.edit-mode #edit-toggle{background:var(--byellow);color:var(--bg);border-color:var(--yellow);}
+#save-btn{background:var(--green);color:var(--bg);border:1px solid var(--bgreen);font-family:var(--vf);font-size:13px;padding:1px 10px;cursor:pointer;height:18px;display:none;}
+#save-btn:hover{background:var(--bgreen);}
+body.edit-mode #save-btn{display:block;}
+#edit-hint{font-size:11px;color:var(--dgray);display:none;font-family:var(--vf);}
+body.edit-mode #edit-hint{display:block;}
+
+/* ── MENUBAR ── */
+#menubar{position:fixed;top:0;left:0;right:0;height:16px;background:var(--cyan);color:var(--bg);font-family:var(--vf);font-size:16px;line-height:16px;z-index:500;display:flex;align-items:center;padding:0 8px;user-select:none;}
+.menu-title{color:var(--bg);font-weight:bold;padding:0 8px;letter-spacing:.05em;margin-right:8px;}
+.menu-item{padding:0 8px;cursor:pointer;position:relative;color:var(--bg);white-space:nowrap;}
+.menu-item:hover,.menu-item.active{background:var(--bg);color:var(--bcyan);}
+.menu-right{margin-left:auto;color:var(--bg);padding:0 8px;}
+.dropdown{display:none;position:absolute;top:16px;left:0;background:var(--bg);border:1px solid var(--cyan);border-top:none;min-width:220px;z-index:600;box-shadow:4px 4px 0 var(--cyan);}
+.menu-item.active .dropdown{display:block;}
+.dropdown a{display:block;padding:2px 16px;color:var(--fg);text-decoration:none;font-family:var(--vf);font-size:16px;line-height:16px;white-space:nowrap;}
+.dropdown a:hover{background:var(--cyan);color:var(--bg);}
+.dropdown-sep{border-top:1px solid var(--dgray);margin:2px 0;}
+
+/* ── STATUSBAR ── */
+#statusbar{position:fixed;bottom:0;left:0;right:0;height:16px;background:var(--cyan);color:var(--bg);font-family:var(--vf);font-size:16px;line-height:16px;z-index:500;display:flex;align-items:center;padding:0 8px;}
+.sb-item{color:var(--bg);white-space:nowrap;padding:0 8px;}
+.sb-sep{color:rgba(0,0,0,0.4);}
+.sb-right{margin-left:auto;}
+
+/* ── DESKTOP ── */
+#desktop{margin-top:16px;margin-bottom:16px;min-height:calc(100vh - 32px);padding:12px 16px;}
+
+/* ── ICONS ── */
+#icon-area{display:flex;flex-wrap:wrap;gap:24px;padding:8px 4px;margin-bottom:12px;}
+.desk-icon{display:flex;flex-direction:column;align-items:center;gap:4px;width:72px;cursor:pointer;text-align:center;outline:none;}
+.icon-glyph{width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:20px;line-height:1;color:var(--bcyan);}
+.desk-icon.selected .icon-glyph{background:var(--blue);}
+.icon-label{font-family:var(--vf);font-size:14px;line-height:16px;color:var(--bright);word-break:break-all;text-align:center;}
+.desk-icon.selected .icon-label{background:var(--blue);}
+.desk-icon:hover .icon-glyph{color:var(--byellow);}
+
+/* ── WINDOW ── */
+.window{border:1px solid var(--dgray);background:var(--bg);margin-bottom:12px;}
+.window-titlebar{background:var(--blue);color:var(--bright);font-family:var(--vf);font-size:16px;line-height:16px;padding:0 4px;display:flex;align-items:center;justify-content:space-between;user-select:none;height:16px;}
+.window-titlebar.inactive{background:var(--dgray);}
+.window-title{flex:1;padding:0 8px;overflow:hidden;white-space:nowrap;}
+.win-btns{display:flex;gap:2px;}
+.window-btn{width:16px;height:16px;display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer;background:var(--dgray);color:var(--bright);border:none;font-family:var(--vf);line-height:1;flex-shrink:0;}
+.window-btn:hover{background:var(--bred);}
+.window-content{padding:12px 16px;}
+.window.collapsed .window-content{display:none;}
+
+/* ── TICKER ── */
+.ticker-bar{background:var(--bg);border-top:1px solid var(--dgray);border-bottom:1px solid var(--dgray);overflow:hidden;height:16px;display:flex;align-items:center;margin-bottom:12px;}
+.ticker-prefix{color:var(--byellow);padding:0 8px;flex-shrink:0;border-right:1px solid var(--dgray);}
+.ticker-inner{overflow:hidden;flex:1;}
+.ticker-text{white-space:nowrap;display:inline-block;animation:scroll-left 50s linear infinite;color:var(--bgreen);font-size:16px;line-height:16px;text-shadow:0 0 6px var(--green);}
+
+/* ── PROGRESS ── */
+.prog-wrap{border:1px solid var(--dgray);height:16px;background:var(--bg);position:relative;overflow:hidden;}
+.prog-fill{height:100%;background:var(--cyan);transition:width .3s;}
+.prog-label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--bright);mix-blend-mode:difference;font-size:13px;line-height:16px;}
+
+/* ── NEWS ── */
+.news-list{list-style:none;}
+.news-entry{padding:8px 0;border-bottom:1px solid var(--dgray);display:grid;grid-template-columns:110px 1fr;gap:16px;align-items:start;}
+.news-entry:last-child{border-bottom:none;}
+.news-entry:hover .n-title{color:var(--byellow);}
+.n-date{color:var(--cyan);font-size:13px;line-height:16px;}
+.n-title{color:var(--bright);margin-bottom:4px;}
+.n-body{color:var(--fg);font-size:13px;line-height:16px;}
+.ntag{display:inline-block;padding:0 4px;font-size:12px;margin-top:4px;}
+.ntag-new{background:var(--byellow);color:var(--bg);}
+.ntag-tour{background:var(--bcyan);color:var(--bg);}
+.ntag-album{background:var(--bgreen);color:var(--bg);}
+.ntag-live{background:var(--bmagenta);color:var(--bg);}
+
+/* ── TRACKLIST ── */
+.tracklist-win table{width:100%;border-collapse:collapse;}
+.tracklist-win tr{cursor:pointer;}
+.tracklist-win tr:hover td{background:var(--blue);color:var(--bright);}
+.tracklist-win tr.playing td{color:var(--byellow);}
+.tracklist-win td{padding:2px 8px;font-size:16px;line-height:16px;border-bottom:1px solid var(--dgray);}
+.tracklist-win td:first-child{color:var(--dgray);width:28px;text-align:right;}
+.tracklist-win td:last-child{color:var(--dgray);width:44px;text-align:right;}
+.play-icon{color:var(--bgreen);animation:blink2 .5s step-end infinite;margin-right:3px;}
+
+/* ── TOUR TABLE ── */
+.tour-table{width:100%;border-collapse:collapse;font-size:15px;}
+.tour-table thead tr{background:var(--blue);color:var(--bright);}
+.tour-table th{padding:4px 8px;text-align:left;font-weight:normal;border:1px solid var(--dgray);}
+.tour-table td{padding:3px 8px;border:1px solid var(--dgray);}
+.tour-table tbody tr:hover td{background:var(--blue);color:var(--bright);cursor:pointer;}
+.tour-table tbody tr.sold-out td{color:var(--dgray);}
+.sold-badge{background:var(--bred);color:var(--bright);padding:0 4px;}
+.sale-badge{background:var(--bgreen);color:var(--bg);padding:0 4px;}
+.ticket-link{color:var(--bcyan);text-decoration:none;}
+.ticket-link:hover{color:var(--byellow);}
+
+/* ── VIDEO GRID ── */
+.video-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.video-item{border:1px solid var(--dgray);cursor:pointer;position:relative;background:#111;aspect-ratio:16/9;overflow:hidden;display:flex;align-items:flex-end;}
+.video-item:hover{border-color:var(--bcyan);}
+.video-item img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:grayscale(100%) brightness(.5);transition:filter .2s;}
+.video-item:hover img{filter:grayscale(60%) brightness(.65);}
+.video-label{position:relative;z-index:1;background:rgba(0,0,0,.88);width:100%;padding:3px 8px;color:var(--bcyan);font-size:13px;line-height:16px;border-top:1px solid var(--dgray);}
+.video-play-char{position:absolute;top:50%;left:50%;transform:translate(-50%,-60%);font-size:28px;color:var(--bright);opacity:0;z-index:2;transition:opacity .2s;text-shadow:0 0 10px var(--bcyan);}
+.video-item:hover .video-play-char{opacity:1;}
+
+/* ── PHOTO STRIP ── */
+.photo-row{display:flex;gap:2px;}
+.photo-item{flex:1;aspect-ratio:1;overflow:hidden;cursor:pointer;border:1px solid var(--dgray);position:relative;transition:flex .4s;}
+.photo-item img{width:100%;height:100%;object-fit:cover;filter:grayscale(100%) contrast(1.2) brightness(.55);transition:filter .3s;}
+.photo-item:hover{flex:2.5;}
+.photo-item:hover img{filter:grayscale(70%) brightness(.7);}
+
+/* ── ARTIST PANEL ── */
+.artist-panel{display:grid;grid-template-columns:200px 1fr;gap:0;border-top:1px solid var(--dgray);}
+.artist-photo-wrap{border-right:1px solid var(--dgray);background:#080808;display:flex;align-items:center;justify-content:center;padding:16px;}
+.artist-photo{width:168px;height:168px;object-fit:cover;filter:grayscale(30%) brightness(.9) contrast(1.1);border:1px solid var(--dgray);}
+.artist-bio{padding:12px 16px;}
+
+/* ── NEWSLETTER ── */
+.nl-row{display:flex;gap:0;margin-top:8px;}
+.nl-input{flex:1;background:var(--bg);border:1px solid var(--cyan);border-right:none;color:var(--bright);font-family:var(--vf);font-size:16px;line-height:16px;padding:1px 8px;outline:none;height:18px;}
+.nl-input::placeholder{color:var(--dgray);}
+.nl-input:focus{border-color:var(--bcyan);}
+.nl-btn{background:var(--cyan);color:var(--bg);border:1px solid var(--bcyan);font-family:var(--vf);font-size:16px;line-height:16px;padding:1px 12px;cursor:pointer;height:18px;white-space:nowrap;}
+.nl-btn:hover{background:var(--bcyan);}
+
+/* ── VIDEO MODAL ── */
+#modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:800;display:none;align-items:center;justify-content:center;flex-direction:column;}
+#modal-overlay.open{display:flex;}
+.modal-window{width:min(720px,96vw);background:var(--bg);}
+.modal-titlebar{background:var(--blue);color:var(--bright);font-family:var(--vf);font-size:16px;line-height:16px;padding:0 8px;display:flex;align-items:center;justify-content:space-between;height:16px;}
+.modal-close-btn{background:var(--bred);color:var(--bright);border:none;font-family:var(--vf);font-size:11px;cursor:pointer;width:16px;height:16px;display:flex;align-items:center;justify-content:center;}
+.modal-video{aspect-ratio:16/9;background:#000;}
+.modal-video iframe{width:100%;height:100%;border:none;}
+.modal-footer{padding:4px 8px;border-top:1px solid var(--dgray);display:flex;gap:16px;align-items:center;}
+.modal-btn{background:var(--dgray);color:var(--bright);border:none;font-family:var(--vf);font-size:16px;padding:0 12px;height:18px;cursor:pointer;}
+.modal-btn:hover{background:var(--blue);}
+
+/* ── BOOT ── */
+#boot-screen{position:fixed;inset:0;background:var(--bg);z-index:9999;padding:16px;font-family:var(--vf);font-size:16px;line-height:16px;color:var(--fg);overflow:hidden;}
+#boot-text{white-space:pre-wrap;color:var(--fg);}
+#boot-screen.gone{display:none;}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:16px;background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--dgray);}
+::-webkit-scrollbar-thumb:hover{background:var(--cyan);}
+a{color:var(--bcyan);text-decoration:none;}
+a:hover{color:var(--byellow);}
+.text-bright{color:var(--bright);}.text-cyan{color:var(--cyan);}.text-bcyan{color:var(--bcyan);}.text-bgreen{color:var(--bgreen);}.text-yellow{color:var(--byellow);}.text-dgray{color:var(--dgray);}
+
+@media(max-width:700px){.video-grid{grid-template-columns:1fr;}.tour-table{font-size:12px;}.news-entry{grid-template-columns:1fr;}.artist-panel{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
 
-<!-- ── HEADER ── -->
-<header id="site-header">
-  <a href="#" class="logo" contenteditable="false">THE STROKES</a>
-  <div class="header-right">
-    <ul class="header-nav">
-      <li><a href="#news">News</a></li>
-      <li><a href="#music">Music</a></li>
-      <li><a href="#tour">Tour</a></li>
-      <li><a href="#videos">Videos</a></li>
-      <li><a href="#photos">Photos</a></li>
-    </ul>
-    <button class="burger" id="burger" aria-label="Menu">
-      <span></span><span></span><span></span>
-    </button>
-  </div>
-</header>
+<!-- BOOT SCREEN -->
+<div id="boot-screen"><pre id="boot-text"></pre></div>
 
-<!-- ── OVERLAY NAV ── -->
-<nav id="overlay" aria-hidden="true">
-  <ul class="overlay-nav">
-    <li><a href="#news" class="overlay-link">News</a></li>
-    <li><a href="#music" class="overlay-link">Music</a></li>
-    <li><a href="#tour" class="overlay-link">Tour</a></li>
-    <li><a href="#videos" class="overlay-link">Videos</a></li>
-    <li><a href="#photos" class="overlay-link">Photos</a></li>
-    <li><a href="#newsletter" class="overlay-link">Mailing List</a></li>
-  </ul>
-  <div class="overlay-footer">
-    <a href="#">Spotify</a>
-    <a href="#">Apple Music</a>
-    <a href="#">Instagram</a>
-    <a href="#">Twitter / X</a>
-    <a href="#">YouTube</a>
-    <a href="#">Store</a>
-  </div>
-</nav>
+<!-- MENUBAR -->
+<div id="menubar">
+  <span class="menu-title ed" id="site-name">&#x2261; BRAD BOWERS</span>
+  <span class="menu-item" data-menu="file">[File]
+    <div class="dropdown">
+      <a href="#news">News</a>
+      <a href="#music">Music / Tracklist</a>
+      <a href="#tour">Tour Dates</a>
+      <a href="#videos">Videos</a>
+      <a href="#photos">Photos</a>
+      <div class="dropdown-sep"></div>
+      <a href="#newsletter">Mailing List</a>
+    </div>
+  </span>
+  <span class="menu-item" data-menu="disco">[Discography]
+    <div class="dropdown">
+      <a class="ed-link" href="https://open.spotify.com/album/1BwHk6gdDbI1dDQaqWMsVY" target="_blank" id="disco1"><span class="ed">Long Vacation (2026) &#x25C4;</span></a>
+      <a class="ed-link" href="https://open.spotify.com/album/6ZQ8CI3y5gmTta9hbYb33a" target="_blank" id="disco2"><span class="ed">Pitchfork Fantasy (2025)</span></a>
+      <a class="ed-link" href="https://open.spotify.com/album/4Nfv42BA4QIfm2FwAM1WI3" target="_blank" id="disco3"><span class="ed">Strangest Emotion (2025)</span></a>
+      <a class="ed-link" href="https://open.spotify.com/album/0hinneHwWAvYAH7hHkJpDC" target="_blank" id="disco4"><span class="ed">Negativity (2024)</span></a>
+    </div>
+  </span>
+  <span class="menu-item" data-menu="stream">[Stream]
+    <div class="dropdown">
+      <a class="ed-link" href="https://open.spotify.com/artist/0Sk3udFTweehPqjVxd86V6" target="_blank" id="lnk-spotify-menu"><span class="ed">Spotify</span></a>
+      <a class="ed-link" href="https://music.apple.com/gb/artist/brad-bowers/1759668846" target="_blank" id="lnk-apple-menu"><span class="ed">Apple Music</span></a>
+      <a class="ed-link" href="https://youtube.com/@bradbowers1" target="_blank" id="lnk-yt-menu"><span class="ed">YouTube</span></a>
+    </div>
+  </span>
+  <span class="menu-item" data-menu="social">[Social]
+    <div class="dropdown">
+      <a class="ed-link" href="https://www.instagram.com/bradbowers/" target="_blank" id="lnk-ig-menu"><span class="ed">Instagram @bradbowers</span></a>
+      <a class="ed-link" href="https://youtube.com/@bradbowers1" target="_blank" id="lnk-yt2-menu"><span class="ed">YouTube @BradBowers1</span></a>
+      <a class="ed-link" href="https://open.spotify.com/artist/0Sk3udFTweehPqjVxd86V6" target="_blank" id="lnk-sp2-menu"><span class="ed">Spotify</span></a>
+    </div>
+  </span>
+  <span class="menu-right" id="clock">00:00:00</span>
+</div>
 
-<!-- ── HERO ── -->
-<section id="hero" style="padding-top: 64px; border-bottom: 1px solid var(--line);">
-  <div class="hero-bg"></div>
-  <div class="hero-img"></div>
-  <div class="scroll-indicator">
-    <span>Scroll</span>
-    <div class="scroll-line"></div>
+<!-- DESKTOP -->
+<div id="desktop">
+
+  <!-- ICONS -->
+  <div id="icon-area" role="list">
+    <div class="desk-icon" tabindex="0" data-target="news"       role="listitem"><div class="icon-glyph ed" id="ico1g">&#x1F4F0;</div><div class="icon-label ed" id="ico1l">NEWS.TXT</div></div>
+    <div class="desk-icon" tabindex="0" data-target="music"      role="listitem"><div class="icon-glyph ed" id="ico2g">&#x266B;</div><div class="icon-label ed" id="ico2l">MUSIC.EXE</div></div>
+    <div class="desk-icon" tabindex="0" data-target="tour"       role="listitem"><div class="icon-glyph ed" id="ico3g">&#x1F3AB;</div><div class="icon-label ed" id="ico3l">TOUR.DAT</div></div>
+    <div class="desk-icon" tabindex="0" data-target="videos"     role="listitem"><div class="icon-glyph ed" id="ico4g">&#x25B6;</div><div class="icon-label ed" id="ico4l">VIDEOS\</div></div>
+    <div class="desk-icon" tabindex="0" data-target="photos"     role="listitem"><div class="icon-glyph ed" id="ico5g">&#x1F4F7;</div><div class="icon-label ed" id="ico5l">PHOTOS\</div></div>
+    <div class="desk-icon" tabindex="0" data-target="newsletter" role="listitem"><div class="icon-glyph ed" id="ico6g">&#x2709;</div><div class="icon-label ed" id="ico6l">MAILIST.BAT</div></div>
+    <div class="desk-icon" tabindex="0" data-target="credits"    role="listitem"><div class="icon-glyph ed" id="ico7g">&#x2139;</div><div class="icon-label ed" id="ico7l">CREDITS.NFO</div></div>
   </div>
-  <div class="hero-content">
-    <p class="hero-eyebrow" contenteditable="false">New Album — Out Now</p>
-    <h1 class="hero-title" contenteditable="false">Reality<br>Awaits</h1>
-    <p class="hero-sub" contenteditable="false">The sixth studio album from The Strokes. Raw. Uncut. Everything you've been waiting for.</p>
-    <div class="hero-ctas">
-      <a href="#music" class="btn-primary">Listen Now</a>
-      <a href="#tour" class="btn-ghost">Tour Dates</a>
+
+  <!-- TICKER -->
+  <div class="ticker-bar">
+    <span class="ticker-prefix ed" id="ticker-prefix">&#x25BA; NEWS</span>
+    <div class="ticker-inner">
+      <span class="ticker-text ed" id="ticker-text">&#x2605; LONG VACATION &#x2014; NEW SINGLE + VIDEO OUT NOW &#x2605; &nbsp;&nbsp;&nbsp; STREAM ON SPOTIFY AND APPLE MUSIC &nbsp;&nbsp;&nbsp; OFFICIAL VIDEO ON YOUTUBE &#x2014; DIRECTED BY AUDREY ANGEL &nbsp;&nbsp;&nbsp; FAMILIAR FLAVORS RECORDS &nbsp;&nbsp;&nbsp; FOLLOW ON INSTAGRAM @BRADBOWERS &nbsp;&nbsp;&nbsp; &#x2605; LONG VACATION &#x2014; OUT NOW &#x2605;</span>
     </div>
   </div>
-</section>
 
-<!-- ── TICKER ── -->
-<div class="ticker-wrap">
-  <div class="ticker">
-    <span class="ticker-item"><span>Reality Awaits — Out Now</span> New Album Available Everywhere</span>
-    <span class="ticker-item"><span>On Tour Summer 2026</span> Tickets On Sale Now</span>
-    <span class="ticker-item"><span>Red Rocks — July 22 & 23</span> Morrison, Colorado</span>
-    <span class="ticker-item"><span>Outside Lands — August 8</span> San Francisco, CA</span>
-    <span class="ticker-item"><span>Reality Awaits — Out Now</span> New Album Available Everywhere</span>
-    <span class="ticker-item"><span>On Tour Summer 2026</span> Tickets On Sale Now</span>
-    <span class="ticker-item"><span>Red Rocks — July 22 & 23</span> Morrison, Colorado</span>
-    <span class="ticker-item"><span>Outside Lands — August 8</span> San Francisco, CA</span>
+  <!-- HERO WINDOW -->
+  <div class="window" id="hero-win">
+    <div class="window-titlebar">
+      <span style="padding:0 4px;">&#x25A0;</span>
+      <span class="window-title ed" id="hero-title">C:\BRADBOWERS\WELCOME.BAS</span>
+      <div class="win-btns">
+        <button class="window-btn" onclick="toggleWin('hero-win')">_</button>
+        <button class="window-btn" onclick="toggleWin('hero-win')">&#x25A1;</button>
+        <button class="window-btn" onclick="toggleWin('hero-win')">&#x2715;</button>
+      </div>
+    </div>
+    <div class="window-content" style="padding:0;">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--dgray);overflow-x:auto;">
+        <pre class="ed-block" id="ascii-art" style="font-family:var(--vf);font-size:16px;line-height:16px;color:var(--bgreen);text-shadow:0 0 8px var(--green);white-space:pre;">
+ &#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2557; &#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2557;  &#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2557; &#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2557;     &#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2557;  &#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2557; &#x2588;&#x2588;&#x2557;    &#x2588;&#x2588;&#x2557;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2557; &#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2557;
+ &#x2588;&#x2588;&#x2554;&#x2550;&#x2550;&#x2550;&#x2550;&#x255D; &#x2588;&#x2588;&#x2554;&#x2550;&#x2550;&#x2588;&#x2588;&#x2557;&#x2588;&#x2588;&#x2554;&#x2550;&#x2550;&#x2550;&#x2588;&#x2588;&#x2557;&#x2588;&#x2588;&#x2554;&#x2550;&#x2550;&#x2588;&#x2588;&#x2557;    &#x2588;&#x2588;&#x2554;&#x2550;&#x2550;&#x2550;&#x2550;&#x255D; &#x2588;&#x2588;&#x2554;&#x2550;&#x2550;&#x2550;&#x2588;&#x2588;&#x2557;&#x2588;&#x2588;&#x2551;    &#x2588;&#x2588;&#x2551;&#x2588;&#x2588;&#x2554;&#x2550;&#x2550;&#x2588;&#x2588;&#x2557;&#x2588;&#x2588;&#x2554;&#x2550;&#x2550;&#x2550;&#x2588;&#x2588;&#x2557;
+ &#x2588;&#x2588;&#x2551;      &#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2554;&#x255D;&#x2588;&#x2588;&#x2551;   &#x2588;&#x2588;&#x2551;&#x2588;&#x2588;&#x2551;  &#x2588;&#x2588;&#x2551;    &#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2557;   &#x2588;&#x2588;&#x2551;   &#x2588;&#x2588;&#x2551;&#x2588;&#x2588;&#x2551;  &#x2588;&#x2588;&#x2551;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2554;&#x255D;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2554;&#x255D;
+ &#x2588;&#x2588;&#x2551;      &#x2588;&#x2588;&#x2554;&#x2550;&#x2550;&#x2588;&#x2588;&#x2557;&#x2588;&#x2588;&#x2551;   &#x2588;&#x2588;&#x2551;&#x2588;&#x2588;&#x2551;  &#x2588;&#x2588;&#x2551;    &#x2588;&#x2588;&#x2554;&#x2550;&#x2550;&#x255D;   &#x2588;&#x2588;&#x2551;   &#x2588;&#x2588;&#x2551;&#x2588;&#x2588;&#x2551;  &#x2588;&#x2588;&#x2551;&#x2588;&#x2588;&#x2554;&#x2550;&#x2550;&#x2588;&#x2588;&#x2557;&#x2588;&#x2588;&#x2554;&#x2550;&#x2550;&#x2588;&#x2588;&#x2557;
+ &#x255A;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2557;&#x2588;&#x2588;&#x2551;  &#x2588;&#x2588;&#x2551;&#x255A;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2554;&#x255D;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2554;&#x255D;    &#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2557;  &#x2588;&#x2588;&#x2551;   &#x2588;&#x2588;&#x2551;&#x255A;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2554;&#x255D;&#x2588;&#x2588;&#x2551;  &#x2588;&#x2588;&#x2551;&#x2588;&#x2588;&#x2551;  &#x2588;&#x2588;&#x2551;
+  &#x255A;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x255D;&#x255A;&#x2550;&#x255D;  &#x255A;&#x2550;&#x255D; &#x255A;&#x2550;&#x2550;&#x2550;&#x2550;&#x255D; &#x255A;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x255D;     &#x255A;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x255D;  &#x255A;&#x2550;&#x255D;   &#x255A;&#x2550;&#x255D; &#x255A;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x255D; &#x255A;&#x2550;&#x255D;  &#x255A;&#x2550;&#x255D;&#x255A;&#x2550;&#x255D;  &#x255A;&#x2550;&#x255D;</pre>
+        <pre class="ed-block" id="hero-banner" style="font-family:var(--vf);font-size:16px;line-height:16px;color:var(--bcyan);text-shadow:0 0 6px var(--cyan);">
+  &#x2554;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2557;
+  &#x2551;   LONG VACATION &#x2014; NEW SINGLE + OFFICIAL VIDEO &#x2014; OUT NOW &#x2014; FAMILIAR FLAVORS     &#x2551;
+  &#x255A;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x255D;</pre>
+      </div>
+
+      <div class="artist-panel">
+        <div class="artist-photo-wrap ed-img-wrap" id="artist-img-wrap">
+          <img class="artist-photo" id="artist-photo" src="https://i.scdn.co/image/ab6761610000e5eb18426589bba36ff3ce6f8cc4" alt="Brad Bowers">
+        </div>
+        <div class="artist-bio">
+          <div><span class="text-cyan">STATUS......:</span> <span class="ed text-bgreen" id="bio-status">&#x25CF; ACTIVE &#x2014; NEW MUSIC OUT NOW</span></div>
+          <div><span class="text-cyan">LATEST......:</span> <span class="ed text-yellow" id="bio-latest">LONG VACATION (2026)</span></div>
+          <div><span class="text-cyan">LABEL.......: </span><span class="ed text-bright" id="bio-label">FAMILIAR FLAVORS</span></div>
+          <div><span class="text-cyan">GENRE.......: </span><span class="ed text-bright" id="bio-genre">INDIE POP / SINGER-SONGWRITER</span></div>
+          <div style="margin-top:8px;"><span class="text-cyan">SPOTIFY.....: </span><a class="ed-link" href="https://open.spotify.com/artist/0Sk3udFTweehPqjVxd86V6" target="_blank" id="lnk-spotify"><span class="ed">open.spotify.com/artist/BRADBOWERS</span></a></div>
+          <div><span class="text-cyan">YOUTUBE.....: </span><a class="ed-link" href="https://youtube.com/@bradbowers1" target="_blank" id="lnk-yt"><span class="ed">youtube.com/@BradBowers1</span></a></div>
+          <div><span class="text-cyan">INSTAGRAM...: </span><a class="ed-link" href="https://instagram.com/bradbowers" target="_blank" id="lnk-ig"><span class="ed">@bradbowers</span></a></div>
+          <div style="margin-top:8px;"><span class="ed-block text-dgray" id="bio-desc" style="font-size:13px;display:block;">Singer-songwriter and guitarist. Known for melodic indie pop with sharp lyrics and a warm, distinctive sound. Based in Los Angeles, CA.</span></div>
+        </div>
+      </div>
+
+      <div style="padding:8px 16px;border-top:1px solid var(--dgray);display:flex;gap:12px;flex-wrap:wrap;">
+        <a class="ed-link" href="https://open.spotify.com/artist/0Sk3udFTweehPqjVxd86V6" target="_blank" id="btn-stream" style="background:var(--green);color:var(--bg);padding:1px 12px;font-family:var(--vf);"><span class="ed">[ &#x266B; STREAM ON SPOTIFY ]</span></a>
+        <a class="ed-link" href="https://youtube.com/@bradbowers1" target="_blank" id="btn-yt" style="background:var(--bred);color:var(--bright);padding:1px 12px;font-family:var(--vf);"><span class="ed">[ &#x25B6; YOUTUBE ]</span></a>
+        <a href="#newsletter" style="background:var(--dgray);color:var(--bright);padding:1px 12px;font-family:var(--vf);"><span class="ed">[ &#x2709; MAILING LIST ]</span></a>
+      </div>
+    </div>
+  </div>
+
+  <!-- NEWS WINDOW -->
+  <div class="window" id="news">
+    <div class="window-titlebar">
+      <span style="padding:0 4px;">&#x25A0;</span>
+      <span class="window-title ed" id="news-title">C:\BRADBOWERS\NEWS.TXT &nbsp;[Read-Only] &nbsp;&#x2500; 4 items</span>
+      <div class="win-btns">
+        <button class="window-btn" onclick="toggleWin('news')">_</button>
+        <button class="window-btn" onclick="toggleWin('news')">&#x25A1;</button>
+        <button class="window-btn" onclick="toggleWin('news')">&#x2715;</button>
+      </div>
+    </div>
+    <div class="window-content">
+      <ul class="news-list">
+        <li class="news-entry">
+          <div class="n-date"><span class="ed" id="nd1">03/02/2026</span><br><span class="ntag ntag-new ed" id="nt1">NEW</span></div>
+          <div>
+            <div class="n-title ed" id="nh1">LONG VACATION &#x2014; OFFICIAL MUSIC VIDEO OUT NOW</div>
+            <div class="n-body ed" id="nb1">The official video for "Long Vacation" is now live on YouTube, directed by Audrey Angel and edited by BB + AA. Stream the single everywhere.</div>
+            <span class="ntag ntag-album ed" id="ntag1">VIDEO</span>
+          </div>
+        </li>
+        <li class="news-entry">
+          <div class="n-date"><span class="ed" id="nd2">2026</span><br><span class="ntag ntag-album ed" id="nt2">SINGLE</span></div>
+          <div>
+            <div class="n-title ed" id="nh2">LONG VACATION &#x2014; NEW SINGLE RELEASED</div>
+            <div class="n-body ed" id="nb2">The latest single from Brad Bowers is out now on Spotify, Apple Music, and all streaming platforms via Familiar Flavors.</div>
+            <span class="ntag ntag-album ed" id="ntag2">RELEASE</span>
+          </div>
+        </li>
+        <li class="news-entry">
+          <div class="n-date"><span class="ed" id="nd3">04/03/2025</span></div>
+          <div>
+            <div class="n-title ed" id="nh3">STRANGEST EMOTION &#x2014; SINGLE RELEASED</div>
+            <div class="n-body ed" id="nb3">The 2025 single "Strangest Emotion" is available on all platforms. Stream it now via Familiar Flavors Records.</div>
+            <span class="ntag ntag-album ed" id="ntag3">SINGLE</span>
+          </div>
+        </li>
+        <li class="news-entry">
+          <div class="n-date"><span class="ed" id="nd4">08/02/2024</span></div>
+          <div>
+            <div class="n-title ed" id="nh4">NEGATIVITY &#x2014; DEBUT SINGLE OUT NOW</div>
+            <div class="n-body ed" id="nb4">Brad Bowers released his debut single "Negativity" in August 2024, marking his arrival as a solo artist on streaming platforms worldwide.</div>
+            <span class="ntag ntag-new ed" id="ntag4">DEBUT</span>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- MUSIC WINDOW -->
+  <div class="window tracklist-win" id="music">
+    <div class="window-titlebar">
+      <span style="padding:0 4px;">&#x25A0;</span>
+      <span class="window-title ed" id="music-title">C:\BRADBOWERS\DISCOGRAPHY\TRACKLIST.M3U &nbsp;&#x2500; Top tracks</span>
+      <div class="win-btns">
+        <button class="window-btn" onclick="toggleWin('music')">_</button>
+        <button class="window-btn" onclick="toggleWin('music')">&#x25A1;</button>
+        <button class="window-btn" onclick="toggleWin('music')">&#x2715;</button>
+      </div>
+    </div>
+    <div class="window-content" style="padding:0;">
+      <div style="padding:6px 16px;border-bottom:1px solid var(--dgray);display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+        <span class="ed text-bcyan" id="music-artist">BRAD BOWERS</span>
+        <span class="text-dgray">&#x2502;</span>
+        <span class="ed text-dgray" id="music-label">FAMILIAR FLAVORS RECORDS</span>
+        <span class="text-dgray">&#x2502;</span>
+        <span class="ed text-dgray" id="music-years">2024&#x2013;2026</span>
+      </div>
+      <div style="padding:8px 16px;border-bottom:1px solid var(--dgray);background:#0a0a0a;">
+        <div style="margin-bottom:4px;color:var(--dgray);font-size:13px;">SPOTIFY PLAYER &#x2500;&#x2500;&#x2500;&#x2500;&#x2500; <span class="ed" id="spotify-embed-label" style="font-size:13px;">Embedded player</span></div>
+        <iframe id="spotify-embed" style="border-radius:0;border:1px solid var(--dgray);"
+          src="https://open.spotify.com/embed/artist/0Sk3udFTweehPqjVxd86V6?utm_source=generator&theme=0"
+          width="100%" height="152" frameborder="0" allowfullscreen=""
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+          loading="lazy"></iframe>
+      </div>
+      <div style="padding:6px 16px;border-bottom:1px solid var(--dgray);">
+        <div style="margin-bottom:4px;color:var(--dgray);font-size:13px;">PLAYBACK &#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;</div>
+        <div class="prog-wrap"><div class="prog-fill" id="track-prog" style="width:0%"></div><div class="prog-label" id="track-lbl">SELECT A TRACK TO PREVIEW</div></div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;">
+        <thead>
+          <tr style="background:var(--blue);color:var(--bright);">
+            <th style="padding:2px 8px;text-align:right;width:28px;border:1px solid var(--dgray);font-weight:normal;">#</th>
+            <th style="padding:2px 8px;border:1px solid var(--dgray);font-weight:normal;"><span class="ed" id="col-track">TRACK TITLE</span></th>
+            <th style="padding:2px 8px;width:60px;border:1px solid var(--dgray);font-weight:normal;"><span class="ed" id="col-year">YEAR</span></th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          <tr data-t="Sugar Daddy"      data-d="2026"><td>01</td><td><span class="ed" id="tr1">Sugar Daddy</span></td><td><span class="ed" id="ty1">2026</span></td></tr>
+          <tr data-t="Long Vacation"    data-d="2026"><td>02</td><td><span class="ed" id="tr2">Long Vacation</span></td><td><span class="ed" id="ty2">2026</span></td></tr>
+          <tr data-t="Loveladies"       data-d="2026"><td>03</td><td><span class="ed" id="tr3">Loveladies</span></td><td><span class="ed" id="ty3">2026</span></td></tr>
+          <tr data-t="Pitchfork Fantasy"data-d="2025"><td>04</td><td><span class="ed" id="tr4">Pitchfork Fantasy</span></td><td><span class="ed" id="ty4">2025</span></td></tr>
+          <tr data-t="Strangest Emotion"data-d="2025"><td>05</td><td><span class="ed" id="tr5">Strangest Emotion</span></td><td><span class="ed" id="ty5">2025</span></td></tr>
+          <tr data-t="Negativity"       data-d="2024"><td>06</td><td><span class="ed" id="tr6">Negativity</span></td><td><span class="ed" id="ty6">2024</span></td></tr>
+        </tbody>
+      </table>
+      <div style="padding:6px 16px;border-top:1px solid var(--dgray);display:flex;gap:12px;flex-wrap:wrap;">
+        <a class="ed-link" href="https://open.spotify.com/artist/0Sk3udFTweehPqjVxd86V6" target="_blank" id="btn-sp2" style="background:var(--green);color:var(--bg);padding:1px 10px;font-family:var(--vf);"><span class="ed">[ &#x266B; SPOTIFY ]</span></a>
+        <a class="ed-link" href="https://music.apple.com/gb/artist/brad-bowers/1759668846" target="_blank" id="btn-ap2" style="background:var(--dgray);color:var(--bright);padding:1px 10px;font-family:var(--vf);"><span class="ed">[ &#x266A; APPLE MUSIC ]</span></a>
+        <a class="ed-link" href="https://youtube.com/@bradbowers1" target="_blank" id="btn-yt2" style="background:var(--bred);color:var(--bright);padding:1px 10px;font-family:var(--vf);"><span class="ed">[ &#x25B6; YOUTUBE ]</span></a>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOUR WINDOW -->
+  <div class="window" id="tour">
+    <div class="window-titlebar">
+      <span style="padding:0 4px;">&#x25A0;</span>
+      <span class="window-title ed" id="tour-title">C:\BRADBOWERS\TOUR\DATES_2026.DAT</span>
+      <div class="win-btns">
+        <button class="window-btn" onclick="toggleWin('tour')">_</button>
+        <button class="window-btn" onclick="toggleWin('tour')">&#x25A1;</button>
+        <button class="window-btn" onclick="toggleWin('tour')">&#x2715;</button>
+      </div>
+    </div>
+    <div class="window-content">
+      <div class="ed-block" id="tour-no-dates" style="color:var(--dgray);font-size:13px;margin-bottom:8px;">No tour dates currently scheduled. Check back soon or join the mailing list below for announcements.</div>
+      <table class="tour-table" id="tour-table" style="display:none;">
+        <thead><tr><th><span class="ed" id="tcol1">DATE</span></th><th><span class="ed" id="tcol2">VENUE</span></th><th><span class="ed" id="tcol3">CITY</span></th><th><span class="ed" id="tcol4">STATUS</span></th><th><span class="ed" id="tcol5">TICKETS</span></th></tr></thead>
+        <tbody id="tour-tbody">
+          <tr><td class="ed" id="td1">TBD</td><td class="ed" id="tv1">VENUE TBD</td><td class="ed" id="tc1">CITY, ST</td><td><span class="sale-badge ed" id="ts1">ON SALE</span></td><td><a href="#" class="ticket-link ed" id="tl1">[ BUY ]</a></td></tr>
+        </tbody>
+      </table>
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;align-items:center;">
+        <button onclick="addTourDate()" style="background:var(--blue);color:var(--bright);border:1px solid var(--bblue);font-family:var(--vf);font-size:13px;padding:1px 10px;cursor:pointer;height:18px;" id="add-tour-btn">[ + ADD DATE ]</button>
+        <button onclick="toggleTourTable()" style="background:var(--dgray);color:var(--bright);border:1px solid var(--dgray);font-family:var(--vf);font-size:13px;padding:1px 10px;cursor:pointer;height:18px;" id="toggle-tour-btn">[ SHOW TABLE ]</button>
+        <a class="ed-link" href="https://open.spotify.com/artist/0Sk3udFTweehPqjVxd86V6" target="_blank" id="btn-tour-sp" style="background:var(--dgray);color:var(--bright);padding:1px 10px;font-family:var(--vf);font-size:13px;"><span class="ed">[ FOLLOW ON SPOTIFY ]</span></a>
+        <a href="#newsletter" style="background:var(--cyan);color:var(--bg);padding:1px 10px;font-family:var(--vf);font-size:13px;"><span class="ed">[ JOIN MAILING LIST ]</span></a>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIDEO WINDOW -->
+  <div class="window" id="videos">
+    <div class="window-titlebar">
+      <span style="padding:0 4px;">&#x25A0;</span>
+      <span class="window-title ed" id="videos-title">C:\BRADBOWERS\VIDEOS\ &nbsp;&#x2500; Click to play</span>
+      <div class="win-btns">
+        <button class="window-btn" onclick="toggleWin('videos')">_</button>
+        <button class="window-btn" onclick="toggleWin('videos')">&#x25A1;</button>
+        <button class="window-btn" onclick="toggleWin('videos')">&#x2715;</button>
+      </div>
+    </div>
+    <div class="window-content">
+      <div style="margin-bottom:8px;background:#0a0a0a;padding:8px;border:1px solid var(--dgray);">
+        <div style="margin-bottom:4px;color:var(--dgray);font-size:13px;">FEATURED VIDEO &#x2500; <span class="ed" id="featured-video-label">Long Vacation (Official Video)</span></div>
+        <iframe id="featured-iframe" width="100%" height="180" style="border:none;"
+          src="https://www.youtube.com/embed/f1NYs-hxOW4"
+          title="Brad Bowers - Long Vacation"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen></iframe>
+      </div>
+      <div class="video-grid" id="video-grid">
+        <div class="video-item" data-video="https://www.youtube.com/embed/f1NYs-hxOW4?autoplay=1" data-title="LONG VACATION (2026)">
+          <img src="https://img.youtube.com/vi/f1NYs-hxOW4/mqdefault.jpg" alt="Long Vacation">
+          <span class="video-play-char">&#x25B6;</span>
+          <div class="video-label ed" id="vl1">LONG_VACATION.MPG</div>
+        </div>
+        <div class="video-item" data-video="https://www.youtube.com/embed/f1NYs-hxOW4?autoplay=1" data-title="LONG VACATION &#x2014; OFFICIAL VIDEO">
+          <img src="https://i.scdn.co/image/ab67616d00004851dd0218e7ee4f32ddd7acf694" alt="Long Vacation Single Art" style="object-fit:cover;">
+          <span class="video-play-char">&#x25B6;</span>
+          <div class="video-label ed" id="vl2">LONG_VACATION_ART.JPG</div>
+        </div>
+        <div class="video-item" style="cursor:default;border-color:var(--dgray);">
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;padding:16px;text-align:center;">
+            <span class="ed text-dgray" id="yt-more-label" style="font-size:13px;">MORE VIDEOS</span>
+            <a class="ed-link" href="https://youtube.com/@bradbowers1" target="_blank" id="btn-yt-ch" style="background:var(--bred);color:var(--bright);padding:2px 12px;font-family:var(--vf);font-size:14px;"><span class="ed">[ &#x25B6; YOUTUBE CHANNEL ]</span></a>
+          </div>
+          <div class="video-label ed" id="vl3">YOUTUBE.COM/@BRADBOWERS1</div>
+        </div>
+      </div>
+      <!-- Add video button (edit mode only) -->
+      <div id="add-video-row" style="display:none;margin-top:6px;">
+        <button onclick="addVideoSlot()" style="background:var(--blue);color:var(--bright);border:1px solid var(--bblue);font-family:var(--vf);font-size:13px;padding:1px 10px;cursor:pointer;height:18px;">[ + ADD VIDEO SLOT ]</button>
+        <span style="color:var(--dgray);font-size:12px;margin-left:8px;">Click a slot then use the panel to set its YouTube URL &amp; label</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHOTOS WINDOW -->
+  <div class="window" id="photos">
+    <div class="window-titlebar">
+      <span style="padding:0 4px;">&#x25A0;</span>
+      <span class="window-title ed" id="photos-title">C:\BRADBOWERS\PHOTOS\ &nbsp;&#x2500; Hover to expand</span>
+      <div class="win-btns">
+        <button class="window-btn" onclick="toggleWin('photos')">_</button>
+        <button class="window-btn" onclick="toggleWin('photos')">&#x25A1;</button>
+        <button class="window-btn" onclick="toggleWin('photos')">&#x2715;</button>
+      </div>
+    </div>
+    <div class="window-content">
+      <div style="margin-bottom:6px;color:var(--dgray);font-size:13px;">Hover to expand &#x2500; <span class="ed" id="photos-note">Artist photo &amp; album art. Follow @bradbowers on Instagram for more.</span></div>
+      <div class="photo-row" id="photo-row">
+        <div class="photo-item ed-img-wrap" id="ph1w"><img id="ph1" src="https://i.scdn.co/image/ab6761610000e5eb18426589bba36ff3ce6f8cc4" alt="Brad Bowers press photo"></div>
+        <div class="photo-item ed-img-wrap" id="ph2w"><img id="ph2" src="https://i.scdn.co/image/ab67616d00004851dd0218e7ee4f32ddd7acf694" alt="Long Vacation"></div>
+        <div class="photo-item ed-img-wrap" id="ph3w"><img id="ph3" src="https://i.scdn.co/image/ab67616d000048511b5a4580e43b8e79fd8b8aec" alt="Negativity"></div>
+        <div class="photo-item ed-img-wrap" id="ph4w"><img id="ph4" src="https://i.scdn.co/image/ab67616d00004851230a489762f3b73eb462b228" alt="Strangest Emotion"></div>
+        <div class="photo-item ed-img-wrap" id="ph5w"><img id="ph5" src="https://img.youtube.com/vi/f1NYs-hxOW4/maxresdefault.jpg" alt="Long Vacation video still"></div>
+      </div>
+      <div style="margin-top:6px;display:flex;gap:12px;flex-wrap:wrap;">
+        <a class="ed-link" href="https://www.instagram.com/bradbowers/" target="_blank" id="lnk-ig2" style="color:var(--bmagenta);font-size:13px;"><span class="ed">&#x2794; MORE ON INSTAGRAM @BRADBOWERS</span></a>
+      </div>
+    </div>
+  </div>
+
+  <!-- NEWSLETTER WINDOW -->
+  <div class="window" id="newsletter">
+    <div class="window-titlebar">
+      <span style="padding:0 4px;">&#x25A0;</span>
+      <span class="window-title ed" id="nl-title">C:\BRADBOWERS\MAILIST.BAT</span>
+      <div class="win-btns">
+        <button class="window-btn" onclick="toggleWin('newsletter')">_</button>
+        <button class="window-btn" onclick="toggleWin('newsletter')">&#x25A1;</button>
+        <button class="window-btn" onclick="toggleWin('newsletter')">&#x2715;</button>
+      </div>
+    </div>
+    <div class="window-content">
+      <pre class="ed-block" id="nl-prompt" style="font-family:var(--vf);font-size:16px;line-height:16px;color:var(--bgreen);margin-bottom:8px;">C:\BRADBOWERS&gt; MAILIST.BAT
+Mailing list registration utility v1.0
+&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;
+Stay informed: new music, releases, shows. No spam.
+Enter your email address and press [SUBSCRIBE]:</pre>
+      <div class="nl-row">
+        <input type="email" class="nl-input" id="nl-email" placeholder="user@domain.com">
+        <button class="nl-btn" id="nl-sub">[ SUBSCRIBE ]</button>
+      </div>
+      <div id="nl-status" style="margin-top:6px;font-size:13px;"></div>
+      <div style="margin-top:12px;display:flex;gap:12px;flex-wrap:wrap;">
+        <a class="ed-link" href="https://open.spotify.com/artist/0Sk3udFTweehPqjVxd86V6" target="_blank" id="btn-nl-sp" style="background:var(--green);color:var(--bg);padding:1px 10px;font-family:var(--vf);font-size:14px;"><span class="ed">[ FOLLOW ON SPOTIFY ]</span></a>
+        <a class="ed-link" href="https://www.instagram.com/bradbowers/" target="_blank" id="btn-nl-ig" style="background:var(--bmagenta);color:var(--bg);padding:1px 10px;font-family:var(--vf);font-size:14px;"><span class="ed">[ INSTAGRAM ]</span></a>
+        <a class="ed-link" href="https://youtube.com/@bradbowers1" target="_blank" id="btn-nl-yt" style="background:var(--bred);color:var(--bright);padding:1px 10px;font-family:var(--vf);font-size:14px;"><span class="ed">[ YOUTUBE ]</span></a>
+      </div>
+    </div>
+  </div>
+
+  <!-- CREDITS WINDOW -->
+  <div class="window" id="credits">
+    <div class="window-titlebar inactive">
+      <span style="padding:0 4px;">&#x25A0;</span>
+      <span class="window-title ed" id="credits-title">CREDITS.NFO</span>
+      <div class="win-btns">
+        <button class="window-btn" onclick="toggleWin('credits')">_</button>
+        <button class="window-btn" onclick="toggleWin('credits')">&#x25A1;</button>
+        <button class="window-btn" onclick="toggleWin('credits')">&#x2715;</button>
+      </div>
+    </div>
+    <div class="window-content">
+      <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+        <div>
+          <div class="ed text-bcyan" id="cr-name">BRAD BOWERS &copy; 2026</div>
+          <div class="ed text-dgray" id="cr-label">FAMILIAR FLAVORS RECORDS</div>
+          <div class="ed text-dgray" id="cr-url">bradbowers.com</div>
+        </div>
+        <div>
+          <div class="text-cyan">LINKS:</div>
+          <div>
+            <a class="ed-link" href="https://open.spotify.com/artist/0Sk3udFTweehPqjVxd86V6" target="_blank" id="lnk-cr-sp"><span class="ed">SPOTIFY</span></a> &middot;
+            <a class="ed-link" href="https://www.instagram.com/bradbowers/" target="_blank" id="lnk-cr-ig"><span class="ed">INSTAGRAM</span></a> &middot;
+            <a class="ed-link" href="https://youtube.com/@bradbowers1" target="_blank" id="lnk-cr-yt"><span class="ed">YOUTUBE</span></a>
+          </div>
+        </div>
+        <div>
+          <div class="text-cyan">FONT CREDITS:</div>
+          <div class="text-dgray">IBM VGA/CGA/EGA by <a href="https://int10h.org/oldschool-pc-fonts/" target="_blank">VileR</a></div>
+          <div class="text-dgray">CC BY-SA 4.0 &#x2500; int10h.org</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /desktop -->
+
+<!-- STATUSBAR -->
+<div id="statusbar">
+  <span class="sb-item" id="sb-mode">NORMAL MODE</span>
+  <span class="sb-sep">&#x2502;</span>
+  <span class="sb-item" id="sb-track">NO TRACK SELECTED</span>
+  <span class="sb-sep sb-right">&#x2502;</span>
+  <span class="sb-item" id="sb-date"></span>
+  <span class="sb-sep">&#x2502;</span>
+  <span class="sb-item">IBM VGA 8x16</span>
+  <span class="sb-sep">&#x2502;</span>
+  <span class="sb-item">80&#xD7;25</span>
+</div>
+
+<!-- EDIT PANEL (appears at bottom when in edit mode) -->
+<div id="edit-panel">
+  <span class="ep-label">&#x25BA; EDITING:</span>
+  <span id="ep-target-name">&#x2014;</span>
+  <span class="ep-sep">&#x2502;</span>
+
+  <!-- Text field -->
+  <span class="ep-label" id="ep-lbl-text" style="display:none;">TEXT:</span>
+  <input class="ep-field" id="ep-text" placeholder="Type new text..." style="display:none;" oninput="applyText()">
+
+  <!-- URL field (for links) -->
+  <span class="ep-label" id="ep-lbl-url" style="display:none;">URL:</span>
+  <input class="ep-field" id="ep-url" placeholder="https://..." style="display:none;" oninput="applyUrl()">
+
+  <!-- Image URL field -->
+  <span class="ep-label" id="ep-lbl-img" style="display:none;">IMG SRC:</span>
+  <input class="ep-field" id="ep-img" placeholder="https://image-url..." style="display:none;" oninput="applyImg()">
+
+  <!-- YouTube embed ID -->
+  <span class="ep-label" id="ep-lbl-yt" style="display:none;">YT VIDEO ID:</span>
+  <input class="ep-field" id="ep-yt" placeholder="e.g. f1NYs-hxOW4" style="display:none;max-width:180px;" oninput="applyYouTube()">
+
+  <span class="ep-sep" id="ep-sep2" style="display:none;">&#x2502;</span>
+  <button class="ep-btn danger" id="ep-clear" onclick="clearField()" style="display:none;">[ CLEAR ]</button>
+  <button class="ep-btn" onclick="deselectAll()" style="margin-left:auto;">[ DESELECT ]</button>
+  <span class="ep-info" id="ep-hint">&#x2190; Click any yellow-outlined element to edit it</span>
+</div>
+
+<!-- VIDEO MODAL -->
+<div id="modal-overlay">
+  <div class="modal-window">
+    <div class="modal-titlebar">
+      <span id="modal-title">VIDEO PLAYER</span>
+      <button class="modal-close-btn" id="modal-close">&#x2715;</button>
+    </div>
+    <div class="modal-video" id="modal-vwrap"></div>
+    <div class="modal-footer">
+      <button class="modal-btn" id="modal-close2">[ CLOSE ]</button>
+      <span style="color:var(--dgray);font-size:13px;">Press ESC to close</span>
+      <a href="https://youtube.com/@bradbowers1" target="_blank" style="margin-left:auto;color:var(--bcyan);font-size:13px;">More on YouTube &#x2794;</a>
+    </div>
   </div>
 </div>
 
-<!-- ── NEWS ── -->
-<section id="news">
-  <div class="section-header reveal">
-    <h2 class="section-title">News</h2>
-    <a href="#" class="section-link">All News</a>
-  </div>
-  <div class="news-grid">
-    <article class="news-card reveal">
-      <p class="news-date" contenteditable="false">May 14, 2026</p>
-      <h3 class="news-headline" contenteditable="false">The Strokes Debut "Falling Out Of Love" on The Late Show</h3>
-      <p class="news-body" contenteditable="false">Julian and the boys took over the Ed Sullivan Theater for a blistering live performance of the new single, giving late night television the jolt it didn't know it needed.</p>
-      <span class="news-tag">TV Appearance</span>
-    </article>
-    <article class="news-card reveal" style="transition-delay: 0.1s;">
-      <p class="news-date" contenteditable="false">April 13, 2026</p>
-      <h3 class="news-headline" contenteditable="false">Global Tour Announced — Summer 2026</h3>
-      <p class="news-body" contenteditable="false">From Red Rocks to Bonnaroo, Outside Lands to Summer Sonic — The Strokes are taking Reality Awaits on the road. Pre-sale registration now open.</p>
-      <span class="news-tag">Tour</span>
-    </article>
-    <article class="news-card reveal" style="transition-delay: 0.2s;">
-      <p class="news-date" contenteditable="false">March 28, 2026</p>
-      <h3 class="news-headline" contenteditable="false">"Reality Awaits" — Album Announcement</h3>
-      <p class="news-body" contenteditable="false">The sixth studio album arrives this summer. Recorded over two years in New York and Los Angeles. Pre-order now and receive an instant download of "Falling Out Of Love."</p>
-      <span class="news-tag">Album</span>
-    </article>
-  </div>
-</section>
-
-<!-- ── FEATURED RELEASE ── -->
-<div id="release">
-  <div class="release-cover">
-    <div class="release-cover-inner">
-      <div class="vinyl-ring"></div>
-      <p class="album-title-overlay" contenteditable="false">Reality Awaits</p>
-    </div>
-  </div>
-  <div class="release-info">
-    <p class="release-label reveal" contenteditable="false">Latest Release — 2026</p>
-    <h2 class="release-title reveal" contenteditable="false">Reality<br>Awaits</h2>
-    <p class="release-desc reveal" contenteditable="false">Produced by Rick Rubin. Recorded at Electric Lady Studios, New York. 11 tracks of pure Strokes energy—jagged guitars, propulsive rhythms, and Julian Casablancas at his most confessional.</p>
-    <ul class="tracklist reveal" id="tracklist">
-      <li data-preview=""><span class="track-num">01</span><span class="track-play">▶</span><span class="track-name" contenteditable="false">Falling Out Of Love</span><span class="track-dur">3:18</span></li>
-      <li><span class="track-num">02</span><span class="track-play">▶</span><span class="track-name" contenteditable="false">Automatic City</span><span class="track-dur">2:54</span></li>
-      <li><span class="track-num">03</span><span class="track-play">▶</span><span class="track-name" contenteditable="false">Neon Bruise</span><span class="track-dur">3:42</span></li>
-      <li><span class="track-num">04</span><span class="track-play">▶</span><span class="track-name" contenteditable="false">Glass Routine</span><span class="track-dur">3:07</span></li>
-      <li><span class="track-num">05</span><span class="track-play">▶</span><span class="track-name" contenteditable="false">Hard Luck Avenue</span><span class="track-dur">4:01</span></li>
-    </ul>
-    <div style="display:flex;gap:12px;">
-      <a href="#" class="btn-primary reveal">Stream Everywhere</a>
-      <a href="#" class="btn-ghost reveal" style="transition-delay:0.1s;">Order Vinyl</a>
-    </div>
-  </div>
-</div>
-
-<!-- ── TOUR ── -->
-<section id="tour">
-  <div class="section-header reveal">
-    <h2 class="section-title">Tour</h2>
-    <a href="#" class="section-link">All Dates</a>
-  </div>
-  <ul class="tour-list" id="tour-list">
-    <li class="tour-item reveal">
-      <span class="tour-date" contenteditable="false">Jul 12, 2026</span>
-      <div class="tour-venue-wrap">
-        <span class="tour-venue" contenteditable="false">Allianz Amphitheater</span>
-        <span class="tour-city" contenteditable="false">Richmond, VA</span>
-      </div>
-      <span class="tour-tag">On Sale</span>
-      <a href="#" class="tour-tickets">Tickets</a>
-    </li>
-    <li class="tour-item reveal" style="transition-delay:0.05s;">
-      <span class="tour-date" contenteditable="false">Jul 15, 2026</span>
-      <div class="tour-venue-wrap">
-        <span class="tour-venue" contenteditable="false">Ruoff Music Center</span>
-        <span class="tour-city" contenteditable="false">Noblesville, IN</span>
-      </div>
-      <span class="tour-tag">On Sale</span>
-      <a href="#" class="tour-tickets">Tickets</a>
-    </li>
-    <li class="tour-item reveal" style="transition-delay:0.1s;">
-      <span class="tour-date" contenteditable="false">Jul 17, 2026</span>
-      <div class="tour-venue-wrap">
-        <span class="tour-venue" contenteditable="false">American Family Insurance Amphitheater</span>
-        <span class="tour-city" contenteditable="false">Milwaukee, WI</span>
-      </div>
-      <span class="tour-tag">On Sale</span>
-      <a href="#" class="tour-tickets">Tickets</a>
-    </li>
-    <li class="tour-item reveal" style="transition-delay:0.15s;">
-      <span class="tour-date" contenteditable="false">Jul 22, 2026</span>
-      <div class="tour-venue-wrap">
-        <span class="tour-venue" contenteditable="false">Red Rocks Amphitheatre</span>
-        <span class="tour-city" contenteditable="false">Morrison, CO</span>
-      </div>
-      <span class="tour-tag sold-out">Sold Out</span>
-      <a href="#" class="tour-tickets sold">Sold Out</a>
-    </li>
-    <li class="tour-item reveal" style="transition-delay:0.2s;">
-      <span class="tour-date" contenteditable="false">Jul 23, 2026</span>
-      <div class="tour-venue-wrap">
-        <span class="tour-venue" contenteditable="false">Red Rocks Amphitheatre</span>
-        <span class="tour-city" contenteditable="false">Morrison, CO</span>
-      </div>
-      <span class="tour-tag sold-out">Sold Out</span>
-      <a href="#" class="tour-tickets sold">Sold Out</a>
-    </li>
-    <li class="tour-item reveal" style="transition-delay:0.25s;">
-      <span class="tour-date" contenteditable="false">Aug 8, 2026</span>
-      <div class="tour-venue-wrap">
-        <span class="tour-venue" contenteditable="false">Outside Lands Music Festival</span>
-        <span class="tour-city" contenteditable="false">San Francisco, CA</span>
-      </div>
-      <span class="tour-tag">Festival</span>
-      <a href="#" class="tour-tickets">Tickets</a>
-    </li>
-    <li class="tour-item reveal" style="transition-delay:0.3s;">
-      <span class="tour-date" contenteditable="false">Aug 14, 2026</span>
-      <div class="tour-venue-wrap">
-        <span class="tour-venue" contenteditable="false">Summer Sonic</span>
-        <span class="tour-city" contenteditable="false">Tokyo, Japan</span>
-      </div>
-      <span class="tour-tag">Festival</span>
-      <a href="#" class="tour-tickets">Tickets</a>
-    </li>
-  </ul>
-</section>
-
-<!-- ── VIDEOS ── -->
-<section id="videos">
-  <div class="section-header reveal">
-    <h2 class="section-title">Videos</h2>
-    <a href="#" class="section-link">All Videos</a>
-  </div>
-  <div class="video-grid">
-    <div class="video-card reveal" data-video="https://www.youtube.com/embed/FT3ODekzSbE?autoplay=1">
-      <img class="video-thumb" src="https://img.youtube.com/vi/FT3ODekzSbE/maxresdefault.jpg" alt="Someday" loading="lazy">
-      <div class="video-overlay">
-        <div class="video-play-btn">▶</div>
-        <p class="video-title" contenteditable="false">Someday</p>
-        <p class="video-meta" contenteditable="false">Official Video · 2001</p>
-      </div>
-    </div>
-    <div class="video-card reveal" style="transition-delay:0.1s;" data-video="https://www.youtube.com/embed/oLMBMGCxFvg?autoplay=1">
-      <img class="video-thumb" src="https://img.youtube.com/vi/oLMBMGCxFvg/maxresdefault.jpg" alt="Hard To Explain" loading="lazy">
-      <div class="video-overlay">
-        <div class="video-play-btn">▶</div>
-        <p class="video-title" contenteditable="false">Hard To Explain</p>
-        <p class="video-meta" contenteditable="false">Official Video · 2001</p>
-      </div>
-    </div>
-    <div class="video-card reveal" style="transition-delay:0.2s;" data-video="https://www.youtube.com/embed/UAy2Z0m_pAo?autoplay=1">
-      <img class="video-thumb" src="https://img.youtube.com/vi/UAy2Z0m_pAo/maxresdefault.jpg" alt="Last Nite" loading="lazy">
-      <div class="video-overlay">
-        <div class="video-play-btn">▶</div>
-        <p class="video-title" contenteditable="false">Last Nite</p>
-        <p class="video-meta" contenteditable="false">Official Video · 2001</p>
-      </div>
-    </div>
-    <div class="video-card reveal" style="transition-delay:0.05s;" data-video="https://www.youtube.com/embed/49YVZQ8hK0A?autoplay=1">
-      <img class="video-thumb" src="https://img.youtube.com/vi/49YVZQ8hK0A/maxresdefault.jpg" alt="12:51" loading="lazy">
-      <div class="video-overlay">
-        <div class="video-play-btn">▶</div>
-        <p class="video-title" contenteditable="false">12:51</p>
-        <p class="video-meta" contenteditable="false">Official Video · 2003</p>
-      </div>
-    </div>
-    <div class="video-card reveal" style="transition-delay:0.15s;" data-video="https://www.youtube.com/embed/LWBnZiUO3Q4?autoplay=1">
-      <img class="video-thumb" src="https://img.youtube.com/vi/LWBnZiUO3Q4/maxresdefault.jpg" alt="Reptilia" loading="lazy">
-      <div class="video-overlay">
-        <div class="video-play-btn">▶</div>
-        <p class="video-title" contenteditable="false">Reptilia</p>
-        <p class="video-meta" contenteditable="false">Official Video · 2004</p>
-      </div>
-    </div>
-    <div class="video-card reveal" style="transition-delay:0.25s;" data-video="https://www.youtube.com/embed/hEa-4Yuz_2A?autoplay=1">
-      <img class="video-thumb" src="https://img.youtube.com/vi/hEa-4Yuz_2A/maxresdefault.jpg" alt="Bad Decisions" loading="lazy">
-      <div class="video-overlay">
-        <div class="video-play-btn">▶</div>
-        <p class="video-title" contenteditable="false">Bad Decisions</p>
-        <p class="video-meta" contenteditable="false">Official Video · 2020</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ── PHOTOS ── -->
-<section id="photos" style="padding-bottom: 0;">
-  <div class="section-header reveal" style="padding-bottom: 0; margin-bottom: 32px;">
-    <h2 class="section-title">Photos</h2>
-    <a href="#" class="section-link">All Photos</a>
-  </div>
-</section>
-<div class="photo-strip reveal">
-  <div class="photo-strip-item">
-    <img class="photo-strip-img" src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&q=80" alt="Band photo 1">
-  </div>
-  <div class="photo-strip-item">
-    <img class="photo-strip-img" src="https://images.unsplash.com/photo-1468164016595-6108e4c60c8b?w=400&q=80" alt="Live photo">
-  </div>
-  <div class="photo-strip-item">
-    <img class="photo-strip-img" src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=400&q=80" alt="Concert photo">
-  </div>
-  <div class="photo-strip-item">
-    <img class="photo-strip-img" src="https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?w=400&q=80" alt="Stage photo">
-  </div>
-  <div class="photo-strip-item">
-    <img class="photo-strip-img" src="https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?w=400&q=80" alt="Band photo 2">
-  </div>
-</div>
-
-<!-- ── NEWSLETTER ── -->
-<section id="newsletter">
-  <div>
-    <h2 class="nl-title reveal" contenteditable="false">Join The<br>Mailing List</h2>
-    <p class="nl-sub reveal" contenteditable="false">Be the first to hear about new music,<br>tour announcements, and exclusive content.</p>
-  </div>
-  <div class="nl-form reveal">
-    <div class="nl-input-wrap">
-      <input type="email" class="nl-input" placeholder="your@email.com">
-      <button class="nl-submit" id="nl-btn">Subscribe</button>
-    </div>
-    <p class="nl-note">No spam. Unsubscribe anytime.</p>
-  </div>
-</section>
-
-<!-- ── FOOTER ── -->
-<footer>
-  <p class="footer-logo">The Strokes</p>
-  <div class="footer-socials">
-    <a href="#">Spotify</a>
-    <a href="#">Instagram</a>
-    <a href="#">X</a>
-    <a href="#">YouTube</a>
-    <a href="#">Store</a>
-  </div>
-  <p class="footer-copy" contenteditable="false">© 2026 The Strokes. All rights reserved.</p>
-</footer>
-
-<!-- ── VIDEO MODAL ── -->
-<div id="video-modal">
-  <div class="modal-inner">
-    <button class="modal-close" id="modal-close">✕ Close</button>
-    <div class="modal-video-wrap" id="modal-video-wrap"></div>
-  </div>
-</div>
-
-<!-- ── EDIT TOOLBAR ── -->
+<!-- EDIT TOOLBAR -->
 <div id="edit-bar">
-  <span id="edit-hint">Click any text to edit</span>
-  <button id="edit-toggle">Edit Mode</button>
+  <span id="edit-hint" style="font-size:11px;color:var(--dgray);display:none;font-family:var(--vf);">CLICK YELLOW = EDIT</span>
+  <button id="save-btn" onclick="saveHTML()">[ SAVE HTML ]</button>
+  <button id="edit-toggle">[ EDIT MODE ]</button>
 </div>
 
 <script>
-  /* ── BURGER / OVERLAY ── */
-  const burger = document.getElementById('burger');
-  const overlay = document.getElementById('overlay');
-  const overlayLinks = document.querySelectorAll('.overlay-link');
+/* ════════════════════════════════════════════════════
+   BOOT
+════════════════════════════════════════════════════ */
+const BOOT=['BRADBOWERS-PC BIOS v1.0','Copyright (C) 2024-2026, Familiar Flavors Systems','','CPU: Brad Bowers @1994MHz    Guitar: Enabled','Memory Test: 640K OK','','Detecting drives...','  Primary Master  : LONG_VACATION.FLAC     [OK]','  Primary Slave   : NEGATIVITY.FLAC        [OK]','  Secondary Master: PITCHFORK_FANTASY.FLAC [OK]','','Loading BRADBOWERS.SYS............. [OK]','Loading GUITAR.DRV................. [OK]','Loading FAMILIAR_FLAVORS.DRV....... [OK]','','Initializing INDIE_POP.EXE v1.0...','','Loading: |||||||||||||||||||||||||||||||||||||| 100%','','WELCOME TO BRAD BOWERS  --  OFFICIAL SITE','C:\\>_',''];
+const bootEl=document.getElementById('boot-text'),bootScr=document.getElementById('boot-screen');
+let bi=0,bci=0;
+function typeBoot(){if(bi>=BOOT.length){setTimeout(()=>bootScr.classList.add('gone'),300);return;}const ln=BOOT[bi];if(bci<ln.length){bootEl.textContent+=ln[bci++];setTimeout(typeBoot,ln.includes('||')?8:14);}else{bootEl.textContent+='\n';bi++;bci=0;setTimeout(typeBoot,bi===BOOT.length?350:30);}}
+typeBoot();
 
-  burger.addEventListener('click', () => {
-    const isOpen = overlay.classList.toggle('open');
-    burger.classList.toggle('open', isOpen);
-    overlay.setAttribute('aria-hidden', !isOpen);
-    document.body.style.overflow = isOpen ? 'hidden' : '';
+/* ════════════════════════════════════════════════════
+   CLOCK
+════════════════════════════════════════════════════ */
+function tick(){const n=new Date(),p=x=>String(x).padStart(2,'0');document.getElementById('clock').textContent=p(n.getHours())+':'+p(n.getMinutes())+':'+p(n.getSeconds());document.getElementById('sb-date').textContent=n.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'2-digit',year:'numeric'}).toUpperCase();}
+tick();setInterval(tick,1000);
+
+/* ════════════════════════════════════════════════════
+   MENUS
+════════════════════════════════════════════════════ */
+document.querySelectorAll('.menu-item').forEach(m=>{
+  m.addEventListener('click',e=>{if(editMode)return;const was=m.classList.contains('active');document.querySelectorAll('.menu-item').forEach(x=>x.classList.remove('active'));if(!was)m.classList.add('active');e.stopPropagation();});
+});
+document.addEventListener('click',()=>{if(!editMode)document.querySelectorAll('.menu-item').forEach(x=>x.classList.remove('active'));});
+
+/* ════════════════════════════════════════════════════
+   WINDOW TOGGLE
+════════════════════════════════════════════════════ */
+function toggleWin(id){document.getElementById(id).classList.toggle('collapsed');}
+
+/* ════════════════════════════════════════════════════
+   ICONS (double-click to open)
+════════════════════════════════════════════════════ */
+document.querySelectorAll('.desk-icon').forEach(ic=>{
+  let last=0;
+  ic.addEventListener('click',e=>{
+    if(editMode)return; // don't open windows while editing icons
+    const now=Date.now();
+    document.querySelectorAll('.desk-icon').forEach(x=>x.classList.remove('selected'));
+    ic.classList.add('selected');
+    if(now-last<420){const t=document.getElementById(ic.dataset.target);if(t){t.classList.remove('collapsed');t.scrollIntoView({behavior:'smooth',block:'start'});}}
+    last=now;
   });
+  ic.addEventListener('keydown',e=>{if(e.key==='Enter'&&!editMode){const t=document.getElementById(ic.dataset.target);if(t){t.classList.remove('collapsed');t.scrollIntoView({behavior:'smooth'});}}});
+});
 
-  overlayLinks.forEach(link => {
-    link.addEventListener('click', () => {
-      overlay.classList.remove('open');
-      burger.classList.remove('open');
-      overlay.setAttribute('aria-hidden', 'true');
-      document.body.style.overflow = '';
-    });
+/* ════════════════════════════════════════════════════
+   TRACKLIST
+════════════════════════════════════════════════════ */
+let curRow=null,progTimer=null;
+function bindTracklist(){
+  document.querySelectorAll('#tbody tr').forEach(row=>{
+    row.onclick=()=>{
+      if(editMode)return;
+      if(curRow){curRow.classList.remove('playing');const fc=curRow.querySelector('td');if(fc)fc.textContent=fc.textContent.replace(/[^\d]/g,'').padStart(2,'0');}
+      row.classList.add('playing');curRow=row;
+      const name=(row.dataset.t||row.querySelector('td:nth-child(2) .ed')?.textContent||'?').toUpperCase();
+      const dur=row.dataset.d||'';
+      document.getElementById('sb-track').textContent='\u266B SELECTED: '+name+(dur?' ('+dur+')':'');
+      document.getElementById('track-lbl').textContent='\u266B '+name+(dur?' \u2014 '+dur:'');
+      const fc=row.querySelector('td');if(fc)fc.innerHTML='<span class="play-icon">\u25BA</span>';
+      if(progTimer)clearInterval(progTimer);
+      let pct=0;document.getElementById('track-prog').style.width='0%';
+      progTimer=setInterval(()=>{pct=Math.min(100,pct+100/120);document.getElementById('track-prog').style.width=pct+'%';if(pct>=100)clearInterval(progTimer);},500);
+    };
   });
+}
+bindTracklist();
 
-  /* ── SCROLL HEADER ── */
-  const header = document.getElementById('site-header');
-  window.addEventListener('scroll', () => {
-    header.classList.toggle('scrolled', window.scrollY > 60);
-  }, { passive: true });
-
-  /* ── REVEAL ON SCROLL ── */
-  const reveals = document.querySelectorAll('.reveal');
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        e.target.classList.add('visible');
-        observer.unobserve(e.target);
-      }
-    });
-  }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
-  reveals.forEach(r => observer.observe(r));
-
-  /* ── VIDEO MODAL ── */
-  const modal = document.getElementById('video-modal');
-  const modalWrap = document.getElementById('modal-video-wrap');
-  const modalClose = document.getElementById('modal-close');
-
-  document.querySelectorAll('.video-card').forEach(card => {
-    card.addEventListener('click', () => {
-      const src = card.dataset.video;
-      if (!src) return;
-      modalWrap.innerHTML = `<iframe src="${src}" allowfullscreen allow="autoplay"></iframe>`;
+/* ════════════════════════════════════════════════════
+   VIDEO MODAL
+════════════════════════════════════════════════════ */
+const modal=document.getElementById('modal-overlay'),mwrap=document.getElementById('modal-vwrap'),mtitle=document.getElementById('modal-title');
+function bindVideoItems(){
+  document.querySelectorAll('.video-item[data-video]').forEach(v=>{
+    v.onclick=()=>{
+      if(editMode)return;
+      if(!v.dataset.video)return;
+      mtitle.textContent='NOW PLAYING \u2014 '+(v.dataset.title||'VIDEO');
+      mwrap.innerHTML='<iframe src="'+v.dataset.video+'" allowfullscreen allow="autoplay" style="width:100%;height:100%;border:none;"></iframe>';
       modal.classList.add('open');
-      document.body.style.overflow = 'hidden';
-    });
+      document.getElementById('sb-mode').textContent='VIDEO MODE';
+    };
   });
+}
+bindVideoItems();
+function closeModal(){modal.classList.remove('open');mwrap.innerHTML='';document.getElementById('sb-mode').textContent=editMode?'EDIT MODE':'NORMAL MODE';}
+document.getElementById('modal-close').onclick=closeModal;
+document.getElementById('modal-close2').onclick=closeModal;
+modal.addEventListener('click',e=>{if(e.target===modal)closeModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(modal.classList.contains('open'))closeModal();}});
 
-  modalClose.addEventListener('click', closeModal);
-  modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+/* ════════════════════════════════════════════════════
+   NEWSLETTER
+════════════════════════════════════════════════════ */
+document.getElementById('nl-sub').onclick=()=>{
+  const v=document.getElementById('nl-email').value,s=document.getElementById('nl-status');
+  if(!v.includes('@')||!v.includes('.')){s.textContent='ERROR: Invalid email. Usage: user@domain.com';s.style.color='var(--bred)';return;}
+  s.textContent='SUCCESS: '+v.toUpperCase()+' added to mailing list.';s.style.color='var(--bgreen)';
+  document.getElementById('nl-email').value='';
+  const b=document.getElementById('nl-sub');b.textContent='[ SUBSCRIBED \u2713 ]';
+  setTimeout(()=>{b.textContent='[ SUBSCRIBE ]';},3000);
+};
 
-  function closeModal() {
-    modal.classList.remove('open');
-    modalWrap.innerHTML = '';
-    document.body.style.overflow = '';
+/* ════════════════════════════════════════════════════
+   TOUR HELPERS
+════════════════════════════════════════════════════ */
+let tourVisible=false;
+function toggleTourTable(){
+  tourVisible=!tourVisible;
+  document.getElementById('tour-table').style.display=tourVisible?'table':'none';
+  document.getElementById('toggle-tour-btn').textContent=tourVisible?'[ HIDE TABLE ]':'[ SHOW TABLE ]';
+}
+let tourRow=0;
+function addTourDate(){
+  if(!tourVisible)toggleTourTable();
+  tourRow++;
+  const tbody=document.getElementById('tour-tbody');
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td class="ed" id="td${tourRow+10}">DATE</td><td class="ed" id="tv${tourRow+10}">VENUE</td><td class="ed" id="tc${tourRow+10}">CITY, ST</td><td><span class="sale-badge ed" id="ts${tourRow+10}">ON SALE</span></td><td><a href="#" class="ticket-link ed" id="tl${tourRow+10}">[ BUY ]</a></td>`;
+  tbody.appendChild(tr);
+  if(editMode){tr.querySelectorAll('.ed').forEach(e=>{e.contentEditable='true';addEditListeners(e);});}
+}
+
+/* ════════════════════════════════════════════════════
+   ADD VIDEO SLOT
+════════════════════════════════════════════════════ */
+let vidSlot=10;
+function addVideoSlot(){
+  vidSlot++;
+  const grid=document.getElementById('video-grid');
+  const div=document.createElement('div');
+  div.className='video-item';div.dataset.video='';div.dataset.title='NEW VIDEO';
+  div.innerHTML=`<img src="https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg" id="vi${vidSlot}img" alt="Video" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:grayscale(100%) brightness(.5)"><span class="video-play-char">&#x25B6;</span><div class="video-label ed" id="vi${vidSlot}lbl">NEW_VIDEO.MPG</div>`;
+  grid.appendChild(div);
+  if(editMode){div.querySelector('.ed').contentEditable='true';addEditListeners(div.querySelector('.ed'));}
+  bindVideoItems();
+}
+
+/* ════════════════════════════════════════════════════
+   ██████████████████████████████████████████████████
+   COMPREHENSIVE EDIT SYSTEM
+   ██████████████████████████████████████████████████
+════════════════════════════════════════════════════ */
+let editMode=false;
+let activeEl=null;       // currently focused editable element
+let activeLinkEl=null;   // parent <a> if the active el is inside a link
+let activeImgWrap=null;  // parent .ed-img-wrap if active is an image wrapper
+let activeImgEl=null;    // actual <img> inside wrapper
+
+const et=document.getElementById('edit-toggle');
+const panel=document.getElementById('edit-panel');
+const epName=document.getElementById('ep-target-name');
+const epText=document.getElementById('ep-text');
+const epUrl=document.getElementById('ep-url');
+const epImg=document.getElementById('ep-img');
+const epYt=document.getElementById('ep-yt');
+const epHint=document.getElementById('ep-hint');
+
+/* Show / hide panel fields */
+function showPanelFields(hasText,hasUrl,hasImg,hasYt){
+  document.getElementById('ep-lbl-text').style.display=hasText?'':'none';
+  epText.style.display=hasText?'':'none';
+  document.getElementById('ep-lbl-url').style.display=hasUrl?'':'none';
+  epUrl.style.display=hasUrl?'':'none';
+  document.getElementById('ep-lbl-img').style.display=hasImg?'':'none';
+  epImg.style.display=hasImg?'':'none';
+  document.getElementById('ep-lbl-yt').style.display=hasYt?'':'none';
+  epYt.style.display=hasYt?'':'none';
+  document.getElementById('ep-sep2').style.display=(hasText||hasUrl||hasImg||hasYt)?'':'none';
+  document.getElementById('ep-clear').style.display=(hasText||hasImg)?'':'none';
+  epHint.style.display=(hasText||hasUrl||hasImg||hasYt)?'none':'';
+}
+
+/* Called when user clicks/focuses any .ed or .ed-block */
+function onEdFocus(e){
+  if(!editMode)return;
+  activeEl=e.target;
+  activeLinkEl=activeEl.closest('.ed-link')||null;
+  activeImgWrap=activeEl.closest('.ed-img-wrap')||null;
+  activeImgEl=activeImgWrap?activeImgWrap.querySelector('img'):null;
+
+  /* Also detect video-item parent for YouTube embed editing */
+  const videoItem=activeEl.closest('.video-item');
+
+  /* Name label */
+  epName.textContent=activeEl.id||activeEl.tagName.toLowerCase()||'element';
+
+  /* Populate text field */
+  epText.value=activeEl.textContent;
+
+  /* Populate URL field if inside a link */
+  if(activeLinkEl){
+    epUrl.value=activeLinkEl.href||'';
+  } else {
+    epUrl.value='';
   }
 
-  /* ── TRACKLIST PLAY ── */
-  document.querySelectorAll('.tracklist li').forEach(li => {
-    li.addEventListener('click', () => {
-      document.querySelectorAll('.tracklist li').forEach(l => l.style.color = '');
-      li.style.color = 'var(--white)';
-    });
+  /* Populate image field if inside img-wrap */
+  if(activeImgEl){
+    epImg.value=activeImgEl.src||'';
+  } else {
+    epImg.value='';
+  }
+
+  /* YouTube embed detection */
+  if(videoItem&&videoItem.dataset.video){
+    const ytId=videoItem.dataset.video.replace(/.*embed\//,'').replace(/\?.*/,'');
+    epYt.value=ytId;
+  } else {
+    epYt.value='';
+  }
+
+  showPanelFields(
+    true,                                           // always show text
+    !!activeLinkEl,                                 // show url if inside a link
+    !!activeImgEl,                                  // show img if inside img-wrap
+    !!(videoItem&&videoItem.dataset.video!==undefined)// show yt if video item
+  );
+
+  document.getElementById('sb-mode').textContent='EDITING: '+(activeEl.id||'element');
+}
+
+/* Live-apply text from panel */
+function applyText(){
+  if(!activeEl)return;
+  activeEl.textContent=epText.value;
+}
+
+/* Live-apply URL from panel */
+function applyUrl(){
+  if(!activeLinkEl)return;
+  activeLinkEl.href=epUrl.value;
+}
+
+/* Live-apply image src from panel */
+function applyImg(){
+  if(!activeImgEl)return;
+  activeImgEl.src=epImg.value;
+}
+
+/* Live-apply YouTube video ID */
+function applyYouTube(){
+  if(!activeEl)return;
+  const videoItem=activeEl.closest('.video-item');
+  if(!videoItem)return;
+  const id=epYt.value.trim();
+  videoItem.dataset.video=id?`https://www.youtube.com/embed/${id}?autoplay=1`:'';
+  const img=videoItem.querySelector('img');
+  if(img&&id)img.src=`https://img.youtube.com/vi/${id}/mqdefault.jpg`;
+}
+
+/* Clear the active field */
+function clearField(){
+  if(activeEl){activeEl.textContent='';epText.value='';}
+  if(activeImgEl){activeImgEl.src='';epImg.value='';}
+}
+
+/* Deselect */
+function deselectAll(){
+  if(activeEl)activeEl.blur();
+  activeEl=null;activeLinkEl=null;activeImgWrap=null;activeImgEl=null;
+  showPanelFields(false,false,false,false);
+  epName.textContent='\u2014';
+  document.getElementById('sb-mode').textContent='EDIT MODE';
+}
+
+/* Attach focus listeners to all editable elements */
+function addEditListeners(el){
+  el.addEventListener('focus',onEdFocus);
+  el.addEventListener('click',e=>{e.stopPropagation();onEdFocus(e);});
+}
+
+/* Also handle image-wrap clicks (select the wrapper = edit its img) */
+function addImgWrapListeners(wrap){
+  wrap.addEventListener('click',e=>{
+    if(!editMode)return;
+    e.stopPropagation();
+    activeEl=wrap;
+    activeLinkEl=null;
+    activeImgWrap=wrap;
+    activeImgEl=wrap.querySelector('img');
+    epName.textContent=(wrap.id||'image-wrap');
+    epText.value='';
+    epImg.value=activeImgEl?activeImgEl.src:'';
+    epUrl.value='';epYt.value='';
+    showPanelFields(false,false,true,false);
+    document.getElementById('sb-mode').textContent='EDITING IMAGE: '+(wrap.id||'img');
+  });
+}
+
+/* TOGGLE EDIT MODE */
+et.addEventListener('click',()=>{
+  editMode=!editMode;
+  document.body.classList.toggle('edit-mode',editMode);
+  et.textContent=editMode?'[ EXIT EDIT ]':'[ EDIT MODE ]';
+  document.getElementById('edit-hint').style.display=editMode?'block':'none';
+  document.getElementById('add-video-row').style.display=editMode?'block':'none';
+  document.getElementById('sb-mode').textContent=editMode?'EDIT MODE \u2014 CLICK YELLOW ELEMENTS TO EDIT':'NORMAL MODE';
+
+  /* Enable / disable all .ed contenteditable */
+  document.querySelectorAll('.ed,.ed-block').forEach(el=>{
+    el.contentEditable=editMode?'true':'false';
   });
 
-  /* ── NEWSLETTER SUBMIT ── */
-  const nlBtn = document.getElementById('nl-btn');
-  const nlInput = document.querySelector('.nl-input');
-  nlBtn.addEventListener('click', () => {
-    if (!nlInput.value.includes('@')) {
-      nlInput.style.borderColor = 'rgba(200,57,43,0.6)';
-      setTimeout(() => nlInput.style.borderColor = '', 1200);
-      return;
-    }
-    nlBtn.textContent = 'Subscribed ✓';
-    nlBtn.style.background = '#4a7c59';
-    nlBtn.style.color = '#fff';
-    nlInput.value = '';
-    setTimeout(() => {
-      nlBtn.textContent = 'Subscribe';
-      nlBtn.style.background = '';
-      nlBtn.style.color = '';
-    }, 3000);
-  });
+  if(editMode){
+    /* Attach listeners to all editable text elements */
+    document.querySelectorAll('.ed,.ed-block').forEach(el=>addEditListeners(el));
+    /* Attach listeners to all image wrappers */
+    document.querySelectorAll('.ed-img-wrap').forEach(w=>addImgWrapListeners(w));
+  } else {
+    deselectAll();
+  }
+});
 
-  /* ── EDIT MODE ── */
-  const editToggle = document.getElementById('edit-toggle');
-  let editMode = false;
+/* Panel input sync (also handles Enter key in panel) */
+epText.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();if(activeEl)activeEl.focus();}});
+epUrl.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();}});
+epImg.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();}});
+epYt.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();}});
 
-  editToggle.addEventListener('click', () => {
-    editMode = !editMode;
-    document.body.classList.toggle('edit-mode', editMode);
-    editToggle.textContent = editMode ? 'Done Editing' : 'Edit Mode';
+/* Sync panel text field if user types directly into the page element */
+document.addEventListener('input',e=>{
+  if(editMode&&e.target===activeEl){
+    epText.value=e.target.textContent;
+  }
+});
 
-    document.querySelectorAll('[contenteditable]').forEach(el => {
-      el.contentEditable = editMode ? 'true' : 'false';
-    });
-  });
-
-  /* Set all contenteditable to false on load */
-  document.querySelectorAll('[contenteditable]').forEach(el => {
-    el.contentEditable = 'false';
-  });
+/* ════════════════════════════════════════════════════
+   SAVE HTML (download a copy)
+════════════════════════════════════════════════════ */
+function saveHTML(){
+  /* Snapshot current DOM, strip edit-mode classes and contenteditable attrs */
+  const clone=document.documentElement.cloneNode(true);
+  clone.querySelector('body').classList.remove('edit-mode');
+  clone.querySelectorAll('[contenteditable]').forEach(el=>el.removeAttribute('contenteditable'));
+  clone.querySelectorAll('.window.collapsed').forEach(el=>el.classList.remove('collapsed'));
+  /* Remove edit-only UI */
+  const toRemove=['edit-bar','edit-panel','boot-screen'];
+  toRemove.forEach(id=>{const el=clone.querySelector('#'+id);if(el)el.remove();});
+  const html='<!DOCTYPE html>\n'+clone.outerHTML;
+  const blob=new Blob([html],{type:'text/html'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='bradbowers-site.html';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  const sb=document.getElementById('sb-mode');
+  sb.textContent='SAVED: bradbowers-site.html';
+  setTimeout(()=>{sb.textContent=editMode?'EDIT MODE':'NORMAL MODE';},2500);
+}
 </script>
 </body>
 </html>
